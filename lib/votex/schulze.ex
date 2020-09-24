@@ -11,6 +11,11 @@ defmodule Votex.Schulze do
 
   @spec cast_vote(Ballot.t(), Ballot.vote()) :: {:ok, Ballot.t()}
   def cast_vote(ballot, vote) do
-    Ballot.add_vote(ballot, vote)
+    missing_votes =
+      (ballot.candidates -- Map.keys(vote))
+      |> Enum.map(&{&1, 0})
+      |> Enum.into(%{})
+
+    Ballot.add_vote(ballot, Map.merge(vote, missing_votes))
   end
 end

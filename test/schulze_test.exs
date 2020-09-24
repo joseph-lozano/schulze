@@ -22,7 +22,7 @@ defmodule Votex.SchulzeTest do
       %{ballot: ballot}
     end
 
-    test "Takes votes correctly", %{ballot: ballot} do
+    test "takes votes correctly", %{ballot: ballot} do
       vote1 = %{"Alice" => 3, "Bob" => 2, "Charlie" => 1}
       {:ok, ballot1} = Schulze.cast_vote(ballot, vote1)
       assert ballot1.votes == %{[["Alice"], ["Bob"], ["Charlie"]] => 1}
@@ -38,6 +38,21 @@ defmodule Votex.SchulzeTest do
       # A smae vote should increment by one
       {:ok, ballot3} = Schulze.cast_vote(ballot2, vote2)
       assert ballot3.votes == %{[["Alice"], ["Bob", "Charlie"]] => 2}
+    end
+
+    test "if candiates are missing, fill them in", %{ballot: ballot} do
+      vote1 = %{"Alice" => 3, "Bob" => 2}
+      {:ok, ballot1} = Schulze.cast_vote(ballot, vote1)
+      assert ballot1.votes == %{[["Alice"], ["Bob"], ["Charlie"]] => 1}
+
+      vote1 = %{"Alice" => 1}
+      {:ok, ballot1} = Schulze.cast_vote(ballot, vote1)
+      assert ballot1.votes == %{[["Alice"], ["Bob", "Charlie"]] => 1}
+    end
+
+    test "reject votes with a negative number", %{ballot: ballot} do
+      vote = %{"Alice" => -1}
+      assert {:error, "Preferences cannot be negative"} = Schulze.cast_vote(ballot, vote)
     end
   end
 end
