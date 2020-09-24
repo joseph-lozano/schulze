@@ -33,6 +33,7 @@ defmodule Votex.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      # Phoenix Deps
       {:phoenix, "~> 1.5.5"},
       {:phoenix_live_view, "~> 0.14.6"},
       {:floki, ">= 0.27.0", only: :test},
@@ -42,7 +43,9 @@ defmodule Votex.MixProject do
       {:telemetry_metrics, "~> 0.4"},
       {:telemetry_poller, "~> 0.4"},
       {:jason, "~> 1.0"},
-      {:plug_cowboy, "~> 2.0"}
+      {:plug_cowboy, "~> 2.0"},
+      # App Deps
+      {:typed_struct, "~> 0.2.1"}
     ]
   end
 
