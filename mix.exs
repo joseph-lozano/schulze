@@ -45,7 +45,8 @@ defmodule Votex.MixProject do
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
       # App Deps
-      {:typed_struct, "~> 0.2.1"}
+      {:typed_struct, "~> 0.2.1"},
+      {:accessible, "~> 0.2.1"}
     ]
   end
 
