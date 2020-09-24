@@ -54,5 +54,10 @@ defmodule Votex.SchulzeTest do
       vote = %{"Alice" => -1}
       assert {:error, "Preferences cannot be negative"} = Schulze.cast_vote(ballot, vote)
     end
+
+    test "reject votes with a wrong candidate", %{ballot: ballot} do
+      vote = %{"Doug" => 1}
+      assert {:error, "Candidate not on ballot"} = Schulze.cast_vote(ballot, vote)
+    end
   end
 end

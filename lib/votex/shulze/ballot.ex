@@ -25,31 +25,14 @@ defmodule Votex.Schulze.Ballot do
 
   @spec add_vote(t(), vote()) :: {:ok, t()}
   def add_vote(ballot, vote) do
-    with {:ok, vote} <- validate(vote) do
-      preference =
-        Enum.group_by(vote, &elem(&1, 1), &elem(&1, 0))
-        |> Enum.sort_by(&elem(&1, 0), &(&1 >= &2))
-        |> Enum.map(&elem(&1, 1))
+    preference =
+      Enum.group_by(vote, &elem(&1, 1), &elem(&1, 0))
+      |> Enum.sort_by(&elem(&1, 0), &(&1 >= &2))
+      |> Enum.map(&elem(&1, 1))
 
-      {:ok, update_in(ballot, [:votes, preference], &increment(&1))}
-    else
-      e -> e
-    end
+    {:ok, update_in(ballot, [:votes, preference], &increment(&1))}
   end
 
   defp increment(nil), do: 1
   defp increment(x), do: x + 1
-
-  defp validate(vote) do
-    try do
-      for {candiate, preference} <- vote do
-        if preference >= 0, do: {candiate, preference}, else: throw(:negative_preference)
-      end
-      |> ok()
-    catch
-      :negative_preference -> {:error, "Preferences cannot be negative"}
-    end
-  end
-
-  defp ok(thing), do: {:ok, thing}
 end
