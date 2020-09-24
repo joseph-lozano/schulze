@@ -21,6 +21,9 @@ defmodule Votex.Schulze do
     end
   end
 
+  def compute(ballot) do
+  end
+
   defp validate(ballot, vote) do
     Enum.reduce_while(vote, :ok, fn {candidate, preference}, acc ->
       cond do

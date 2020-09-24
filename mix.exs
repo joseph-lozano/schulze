@@ -46,7 +46,8 @@ defmodule Votex.MixProject do
       {:plug_cowboy, "~> 2.0"},
       # App Deps
       {:typed_struct, "~> 0.2.1"},
-      {:accessible, "~> 0.2.1"}
+      {:accessible, "~> 0.2.1"},
+      {:libgraph, "~> 0.13.3"}
     ]
   end
 
