@@ -2,6 +2,11 @@ defmodule Votex.SchulzeTest do
   use ExUnit.Case
   alias Votex.Schulze
 
+  describe "create_ballot/1" do
+    test "takes params" do
+    end
+  end
+
   describe "new_ballot/1" do
     test "starts a ballot with the candidates and no votes" do
       candidates = ["Alice", "Bob", "Charlie"]

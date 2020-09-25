@@ -1,0 +1,14 @@
+<h1><%= @id %></h1>
+
+<p>Current Votes: <span><%= @votes %></span><p>
+
+<%= f = form_for :ballot, "#", [phx_submit: :sumit] %>
+<% candidate_count = length(@candidates) %>
+<%= for candidate <- @candidates do %>
+
+  <%= label candidate, candidate %>
+  <%= select f, candidate, (0..candidate_count) %>
+<% end %>
+<br/>
+<%= submit "Vote" %>
+</form>

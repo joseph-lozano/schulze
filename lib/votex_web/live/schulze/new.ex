@@ -19,7 +19,7 @@ defmodule VotexWeb.SchulzeLive.New do
       Enum.uniq(candidates) != candidates ->
         {:noreply, put_flash(socket, :error, "Candidate Names must be unique")}
 
-      true ->
+      Schulze.create_ballot(params) ->
         {:noreply,
          socket
          |> put_flash(:error, "TODO: Create Ballot")

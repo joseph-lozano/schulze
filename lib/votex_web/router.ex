@@ -21,6 +21,7 @@ defmodule VotexWeb.Router do
 
     live "/schulze", SchulzeLive.Index
     live "/schulze/new", SchulzeLive.New
+    live "/schulze/:id", SchulzeLive.Show
   end
 
   # Other scopes may use custom stacks.

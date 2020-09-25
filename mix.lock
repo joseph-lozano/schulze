@@ -5,6 +5,7 @@
   "file_system": {:hex, :file_system, "0.2.9", "545b9c9d502e8bfa71a5315fac2a923bd060fd9acb797fe6595f54b0f975fd32", [:mix], [], "hexpm", "3cf87a377fe1d93043adeec4889feacf594957226b4f19d5897096d6f61345d8"},
   "floki": {:hex, :floki, "0.28.0", "0d0795a17189510ee01323e6990f906309e9fc6e8570219135211f1264d78c7f", [:mix], [{:html_entities, "~> 0.5.0", [hex: :html_entities, repo: "hexpm", optional: false]}], "hexpm", "db1549560874ebba5a6367e46c3aec5fedd41f2757ad6efe567efb04b4d4ee55"},
   "html_entities": {:hex, :html_entities, "0.5.1", "1c9715058b42c35a2ab65edc5b36d0ea66dd083767bef6e3edb57870ef556549", [:mix], [], "hexpm", "30efab070904eb897ff05cd52fa61c1025d7f8ef3a9ca250bc4e6513d16c32de"},
+  "isaac": {:hex, :isaac, "0.0.1", "791111b654941ce32b1f599be71f60512c997241242c5ed55eddbed8abb030ef", [:mix], [], "hexpm", "e43c136931b8003def7cf8a9eaa49e9713ab91a76729c667591e0a4c03511fa1"},
   "jason": {:hex, :jason, "1.2.2", "ba43e3f2709fd1aa1dce90aaabfd039d000469c05c56f0b8e31978e03fa39052", [:mix], [{:decimal, "~> 1.0 or ~> 2.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm", "18a228f5f0058ee183f29f9eae0805c6e59d61c3b006760668d8d18ff0d12179"},
   "libgraph": {:hex, :libgraph, "0.13.3", "20732b7bafb933dcf7351c479e03076ebd14a85fd3202c67a1c197f4f7c2466b", [:mix], [], "hexpm", "78f2576eef615440b46f10060b1de1c86640441422832052686df53dc3c148c6"},
   "mime": {:hex, :mime, "1.4.0", "5066f14944b470286146047d2f73518cf5cca82f8e4815cf35d196b58cf07c47", [:mix], [], "hexpm", "75fa42c4228ea9a23f70f123c74ba7cece6a03b1fd474fe13f6a7a85c6ea4ff6"},

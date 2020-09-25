@@ -1,9 +1,27 @@
 defmodule Votex.Schulze do
   alias __MODULE__.Ballot
-  @spec new_ballot(Ballot.candidate_list()) :: {:ok, Ballot.t()} | {:error, reason :: term()}
-  def new_ballot(candidates) do
+  alias Votex.Storage
+
+  def create_ballot(name, candidates) do
+    with {:ok, ballot} <- new_ballot(name, candidates),
+         :ok <- Storage.create(name, ballot) do
+      {:ok, ballot}
+    end
+  end
+
+  def all_ballots() do
+    Storage.all()
+  end
+
+  def get_ballot(name) do
+    Storage.load(name)
+  end
+
+  @spec new_ballot(String.t(), Ballot.candidate_list()) ::
+          {:ok, Ballot.t()} | {:error, reason :: term()}
+  def new_ballot(name, candidates) do
     if Enum.uniq(candidates) == candidates do
-      {:ok, %Ballot{candidates: candidates}}
+      {:ok, %Ballot{name: name, candidates: candidates}}
     else
       {:error, "Candidates must be unique"}
     end

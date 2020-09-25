@@ -11,11 +11,10 @@ defmodule Votex.Schulze.Ballot do
   @type vote :: %{candidate() => pos_integer()}
 
   typedstruct do
+    field(:name, String.t(), enforce: true)
     field(:candidates, candidate_list(), default: [])
     field(:votes, [vote()], default: [])
   end
-
-  use Accessible
 
   def add_vote(ballot, vote) do
     update_in(ballot.votes, &[vote | &1])
