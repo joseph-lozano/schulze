@@ -114,10 +114,14 @@ IO.puts("START CREATE BALLOT")
 
     {:ok, new_ballot} = Schulze.create_ballot(rand_name, candidate_names)
 
-    Enum.reduce(rand_votes, new_ballot, fn vote, acc ->
-      {:ok, ballot} = Schulze.cast_vote(acc, vote)
-      ballot
-    end)
+    ballot =
+      Enum.reduce(rand_votes, new_ballot, fn vote, acc ->
+        {:ok, ballot} = Schulze.cast_vote(acc, vote)
+        ballot
+      end)
+
+    Schulze.save_ballot(ballot.name, ballot)
+    ballot
   end)
 
 IO.inspect(div(create_ballot_time, 1000), label: "CREATE BALLOT")

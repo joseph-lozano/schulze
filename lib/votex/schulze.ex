@@ -9,6 +9,10 @@ defmodule Votex.Schulze do
     end
   end
 
+  def save_ballot(name, ballot) do
+    Storage.save(name, ballot)
+  end
+
   def all_ballots() do
     Storage.all()
   end
