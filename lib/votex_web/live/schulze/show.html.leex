@@ -4,7 +4,7 @@
 
 <%= f = form_for :ballot, "#", [phx_submit: :submit] %>
 <% candidate_count = length(@election.candidates) %>
-<%= for candidate <- @election.candidates do %>
+<%= for candidate <- @election.candidates |> Enum.shuffle() do %>
 
   <%= label candidate, candidate %>
   <%= select f, candidate, (0..candidate_count) %>

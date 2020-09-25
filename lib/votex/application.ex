@@ -7,6 +7,7 @@ defmodule Votex.Application do
 
   def start(_type, _args) do
     children = [
+      Votex.Repo,
       # Start the Telemetry supervisor
       VotexWeb.Telemetry,
       # Start the PubSub system

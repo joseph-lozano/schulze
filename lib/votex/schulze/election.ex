@@ -11,9 +11,11 @@ defmodule Votex.Schulze.Election do
   @type vote :: %{candidate() => pos_integer()}
 
   typedstruct do
+    field(:id, integer(), default: nil)
     field(:name, String.t(), enforce: true)
     field(:candidates, candidate_list(), default: [])
     field(:votes, [vote()], default: [])
+    field(:winners, [candidate_list()], default: nil)
   end
 
   def add_vote(election, vote) do

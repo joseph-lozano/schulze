@@ -21,6 +21,13 @@ config :votex, VotexWeb.Endpoint,
     ]
   ]
 
+config :votex, Votex.Repo,
+  database: "votex_dev",
+  username: "postgres",
+  password: "postgres",
+  hostname: "localhost",
+  port: "5432"
+
 # ## SSL Support
 #
 # In order to use HTTPS in development, a self-signed

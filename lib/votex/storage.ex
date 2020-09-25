@@ -1,28 +1,57 @@
 defmodule Votex.Storage do
+  use Ecto.Schema
+  alias Votex.Repo
+  require Ecto.Query
+
+  schema "elections" do
+    field(:content, Votex.Term)
+    field(:winners, {:array, {:array, :string}})
+  end
+
   def all() do
-    File.ls!("storage")
-    |> Enum.reject(&(&1 == ".gitkeep"))
+    __MODULE__
+    |> Ecto.Query.order_by(asc: :id)
+    |> Repo.all()
+    |> Enum.map(& &1.content)
   end
 
-  def save(identifier, term) do
-    contents = :erlang.term_to_binary(term)
-    File.write("storage/#{identifier}", contents, [:write])
-  end
-
-  def create(identifier, term) do
-    contents = :erlang.term_to_binary(term)
-
-    File.write("storage/#{identifier}", contents, [:exclusive])
+  def update(term) do
+    changeset(%__MODULE__{id: term.id}, %{content: term, winners: term.winners})
+    |> Repo.update()
     |> case do
-      {:error, :eexist} -> {:error, :exists}
-      :ok -> :ok
+      {:ok, %__MODULE__{content: content}} -> {:ok, content}
+      e -> e
+    end
+    |> IO.inspect()
+  end
+
+  def create(term) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(
+      :first_insert,
+      changeset(%__MODULE__{}, %{content: term})
+    )
+    |> Ecto.Multi.run(:get_id, fn _repo, %{first_insert: %{id: id, content: content} = storage} ->
+      Repo.update(changeset(storage, %{content: put_in(content.id, id)}))
+    end)
+    |> Repo.transaction()
+  end
+
+  def get(id) do
+    case Repo.get(__MODULE__, id) do
+      %__MODULE__{content: content} -> content
+      _ -> {:error, "Election Not Found"}
     end
   end
 
-  def load(identifier) do
-    case File.read("storage/#{identifier}") do
-      {:ok, contents} -> {:ok, :erlang.binary_to_term(contents, [:safe])}
-      _e -> {:error, :no_file}
+  def delete(id) do
+    case Repo.delete(%__MODULE__{id: id}) do
+      {:ok, _} -> :ok
+      e -> e
     end
+  end
+
+  def changeset(term, attrs) do
+    Ecto.Changeset.cast(term, attrs, [:content, :winners])
   end
 end

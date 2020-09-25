@@ -6,9 +6,8 @@
 <%= text_input f, :name, value: @name %>
 <br/>
 <%= label f, :candidates %>
-<% candidate_map = @candidates |> Enum.into(%{}) %>
 <%= for {i, candidate} <- @candidates do %>
-    <%= text_input f, "candidate_#{i}", value: Map.get(candidate_map, i)  %>
+    <%= text_input f, "candidate_#{i}", value: candidate  %>
 <% end %>
 <%= submit "Submit" %>
 

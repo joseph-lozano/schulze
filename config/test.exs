@@ -8,3 +8,10 @@ config :votex, VotexWeb.Endpoint,
 
 # Print only warnings and errors during test
 config :logger, level: :warn
+
+config :votex, Votex.Repo,
+  database: "votex_test",
+  username: "postgres",
+  password: "postgres",
+  hostname: "localhost",
+  port: "5432"

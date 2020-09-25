@@ -120,7 +120,7 @@ end
 #         election
 #       end)
 
-#     Schulze.save_election(election.name, election)
+#     Schulze.update_election(election.name, election)
 #     election
 #   end)
 

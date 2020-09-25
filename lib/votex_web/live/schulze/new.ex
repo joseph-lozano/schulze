@@ -16,7 +16,7 @@ defmodule VotexWeb.SchulzeLive.New do
 
       {:ok, _} ->
         socket
-        |> put_flash(:error, "TODO: Create Election")
+        |> put_flash(:info, "Created Election")
         |> push_redirect(to: Routes.live_path(socket, VotexWeb.SchulzeLive.Index))
         |> noreply()
     end

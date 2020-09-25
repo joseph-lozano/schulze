@@ -4,23 +4,35 @@ defmodule Votex.Schulze do
 
   def create_election(name, candidates) do
     with {:ok, election} <- new_election(name, candidates),
-         :ok <- Storage.create(name, election) do
+         :ok <- Storage.create(election) do
       VotexWeb.Endpoint.broadcast!(name, "new_election", %{election: election})
       {:ok, election}
     end
   end
 
-  def save_election(name, election) do
+  def update_election(election), do: update_election(election.name, election)
+
+  def update_election(name, election) do
     VotexWeb.Endpoint.broadcast!(name, "election_updated", %{})
-    Storage.save(name, election)
+    Storage.update(election)
+  end
+
+  def delete_election(id) when is_binary(id) do
+    id
+    |> String.to_integer()
+    |> delete_election()
+  end
+
+  def delete_election(id) when is_integer(id) do
+    Storage.delete(id)
   end
 
   def all_elections() do
     Storage.all()
   end
 
-  def get_election(name) do
-    Storage.load(name)
+  def get_election(id) do
+    Storage.get(id)
   end
 
   @spec new_election(String.t(), Election.candidate_list()) ::
@@ -145,13 +157,17 @@ defmodule Votex.Schulze do
   def get_winner(%Election{} = election), do: get_results(election) |> get_winner(election)
 
   def get_winner(results, election) when is_map(results) do
-    (election.candidates -- Map.keys(results))
-    |> Enum.reduce(results, fn missing, acc -> Map.put(acc, missing, 0) end)
-    |> Enum.group_by(fn {_candidate, strength} -> strength end, fn {candidate, _strength} ->
-      candidate
-    end)
-    |> Enum.sort_by(fn {score, _} -> score end, &(&1 >= &2))
-    |> Enum.map(&elem(&1, 1))
+    winners =
+      (election.candidates -- Map.keys(results))
+      |> Enum.reduce(results, fn missing, acc -> Map.put(acc, missing, 0) end)
+      |> Enum.group_by(fn {_candidate, strength} -> strength end, fn {candidate, _strength} ->
+        candidate
+      end)
+      |> Enum.sort_by(fn {score, _} -> score end, &(&1 >= &2))
+      |> Enum.map(&elem(&1, 1))
+
+    put_in(election.winners, winners)
+    |> update_election()
   end
 
   defp validate(election, vote) do

@@ -44,6 +44,8 @@ defmodule Votex.MixProject do
       {:telemetry_poller, "~> 0.4"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
+      {:postgrex, "~> 0.15.6"},
+      {:ecto_sql, "~> 3.4"},
       # App Deps
       {:typed_struct, "~> 0.2.1"},
       {:accessible, "~> 0.2.1"},
@@ -59,7 +61,9 @@ defmodule Votex.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get", "cmd npm install --prefix assets"]
+      setup: ["deps.get", "cmd npm install --prefix assets"],
+      "ecto.reset": ["ecto.drop --quiet", "ecto.create --quiet", "ecto.migrate --quiet"],
+      test: ["ecto.reset", "test"]
     ]
   end
 end

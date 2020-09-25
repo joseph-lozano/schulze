@@ -7,6 +7,8 @@
 # General application configuration
 use Mix.Config
 
+config :votex, ecto_repos: [Votex.Repo]
+
 # Configures the endpoint
 config :votex, VotexWeb.Endpoint,
   url: [host: "localhost"],
