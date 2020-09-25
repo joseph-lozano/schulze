@@ -85,45 +85,45 @@ end
 # winner_3 = Schulze.get_winner(get_election.(votes_3))
 # winner_4 = Schulze.get_winner(get_election.(votes_4))
 
-votes = 1_000
+# votes = 1_000
 
-IO.puts("Generating random votes")
+# IO.puts("Generating random votes")
 
-:random.seed(:os.timestamp())
+# :random.seed(:os.timestamp())
 
-{rand_time, rand_votes} =
-  :timer.tc(fn ->
-    Enum.map(1..votes, fn _ ->
-      for candidate <- candidate_names, into: %{} do
-        rand = :random.uniform(5)
-        {candidate, rand}
-      end
-    end)
-  end)
+# {rand_time, rand_votes} =
+#   :timer.tc(fn ->
+#     Enum.map(1..votes, fn _ ->
+#       for candidate <- candidate_names, into: %{} do
+#         rand = :random.uniform(5)
+#         {candidate, rand}
+#       end
+#     end)
+#   end)
 
-IO.puts("Took #{div(rand_time, 1000)} to generate all the votes")
+# IO.puts("Took #{div(rand_time, 1000)} to generate all the votes")
 
-IO.puts("START CREATE ELECTION")
+# IO.puts("START CREATE ELECTION")
 
-{create_election_time, rand_election} =
-  :timer.tc(fn ->
-    rand_name =
-      :crypto.strong_rand_bytes(10)
-      |> Base.url_encode64()
-      |> binary_part(0, 10)
+# {create_election_time, rand_election} =
+#   :timer.tc(fn ->
+#     rand_name =
+#       :crypto.strong_rand_bytes(10)
+#       |> Base.url_encode64()
+#       |> binary_part(0, 10)
 
-    {:ok, new_election} = Schulze.create_election(rand_name, candidate_names)
+#     {:ok, new_election} = Schulze.create_election(rand_name, candidate_names)
 
-    election =
-      Enum.reduce(rand_votes, new_election, fn vote, acc ->
-        {:ok, election} = Schulze.cast_vote(acc, vote)
-        election
-      end)
+#     election =
+#       Enum.reduce(rand_votes, new_election, fn vote, acc ->
+#         {:ok, election} = Schulze.cast_vote(acc, vote)
+#         election
+#       end)
 
-    Schulze.save_election(election.name, election)
-    election
-  end)
+#     Schulze.save_election(election.name, election)
+#     election
+#   end)
 
-IO.inspect(div(create_election_time, 1000), label: "CREATE ELECTION")
+# IO.inspect(div(create_election_time, 1000), label: "CREATE ELECTION")
 
-{get_winner_time, winner} = :timer.tc(fn -> Schulze.get_winner(rand_election) end)
+# {get_winner_time, winner} = :timer.tc(fn -> Schulze.get_winner(rand_election) end)
