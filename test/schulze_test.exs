@@ -10,20 +10,20 @@ defmodule Votex.SchulzeTest do
   describe "new_election/1" do
     test "starts a election with the candidates and no votes" do
       candidates = ["Alice", "Bob", "Charlie"]
-      assert {:ok, %Schulze.Election{} = election} = Schulze.new_election(candidates)
+      assert {:ok, %Schulze.Election{} = election} = Schulze.new_election("test", candidates)
       assert election.candidates == candidates
       assert election.votes == []
     end
 
     test "fails if 2 candidates share a name" do
       candidates = ["Alice", "Alice", "Bob", "Charlie"]
-      assert {:error, "Candidates must be unique"} = Schulze.new_election(candidates)
+      assert {:error, "Candidates must be unique"} = Schulze.new_election("test", candidates)
     end
   end
 
   describe "cast_vote/2" do
     setup do
-      {:ok, election} = Schulze.new_election(["Alice", "Bob", "Charlie"])
+      {:ok, election} = Schulze.new_election("test", ["Alice", "Bob", "Charlie"])
       %{election: election}
     end
 
