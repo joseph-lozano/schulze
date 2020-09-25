@@ -2,10 +2,10 @@
 
 
 <table>
-<%= for ballot <- @ballots do %>
+<%= for election <- @elections do %>
 <tr>
   <td>
-    <%= link ballot, to: Routes.live_path(@socket, VotexWeb.SchulzeLive.Show, ballot) %>
+    <%= link election, to: Routes.live_path(@socket, VotexWeb.SchulzeLive.Show, election) %>
   </td>
   <td>
     <%= link "Delete", to: "#" %>
@@ -14,4 +14,4 @@
 <% end %>
 </table>
 
-<%= link "New Ballot", to: Routes.live_path(@socket, VotexWeb.SchulzeLive.New) %>
+<%= link "New Election", to: Routes.live_path(@socket, VotexWeb.SchulzeLive.New) %>

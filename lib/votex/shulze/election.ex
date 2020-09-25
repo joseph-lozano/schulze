@@ -1,6 +1,6 @@
-defmodule Votex.Schulze.Ballot do
+defmodule Votex.Schulze.Election do
   @moduledoc """
-  A struct and module for a Schulze Ballot
+  A struct and module for a Schulze Election
   Candidates are represented as strings.
 
   """
@@ -16,7 +16,7 @@ defmodule Votex.Schulze.Ballot do
     field(:votes, [vote()], default: [])
   end
 
-  def add_vote(ballot, vote) do
-    update_in(ballot.votes, &[vote | &1])
+  def add_vote(election, vote) do
+    update_in(election.votes, &[vote | &1])
   end
 end

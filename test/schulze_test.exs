@@ -2,49 +2,49 @@ defmodule Votex.SchulzeTest do
   use ExUnit.Case
   alias Votex.Schulze
 
-  describe "create_ballot/1" do
+  describe "create_election/1" do
     test "takes params" do
     end
   end
 
-  describe "new_ballot/1" do
-    test "starts a ballot with the candidates and no votes" do
+  describe "new_election/1" do
+    test "starts a election with the candidates and no votes" do
       candidates = ["Alice", "Bob", "Charlie"]
-      assert {:ok, %Schulze.Ballot{} = ballot} = Schulze.new_ballot(candidates)
-      assert ballot.candidates == candidates
-      assert ballot.votes == []
+      assert {:ok, %Schulze.Election{} = election} = Schulze.new_election(candidates)
+      assert election.candidates == candidates
+      assert election.votes == []
     end
 
     test "fails if 2 candidates share a name" do
       candidates = ["Alice", "Alice", "Bob", "Charlie"]
-      assert {:error, "Candidates must be unique"} = Schulze.new_ballot(candidates)
+      assert {:error, "Candidates must be unique"} = Schulze.new_election(candidates)
     end
   end
 
   describe "cast_vote/2" do
     setup do
-      {:ok, ballot} = Schulze.new_ballot(["Alice", "Bob", "Charlie"])
-      %{ballot: ballot}
+      {:ok, election} = Schulze.new_election(["Alice", "Bob", "Charlie"])
+      %{election: election}
     end
 
-    test "takes votes correctly", %{ballot: ballot} do
+    test "takes votes correctly", %{election: election} do
       vote1 = %{"Alice" => 3, "Bob" => 2, "Charlie" => 1}
-      {:ok, ballot1} = Schulze.cast_vote(ballot, vote1)
-      assert ballot1.votes == [vote1]
+      {:ok, election1} = Schulze.cast_vote(election, vote1)
+      assert election1.votes == [vote1]
 
       vote2 = %{"Alice" => 3, "Bob" => 1, "Charlie" => 1}
-      {:ok, ballot2} = Schulze.cast_vote(ballot1, vote2)
-      assert ballot2.votes == [vote2, vote1]
+      {:ok, election2} = Schulze.cast_vote(election1, vote2)
+      assert election2.votes == [vote2, vote1]
     end
 
-    test "reject votes with a negative number", %{ballot: ballot} do
+    test "reject votes with a negative number", %{election: election} do
       vote = %{"Alice" => -1}
-      assert {:error, "Preferences cannot be negative"} = Schulze.cast_vote(ballot, vote)
+      assert {:error, "Preferences cannot be negative"} = Schulze.cast_vote(election, vote)
     end
 
-    test "reject votes with a wrong candidate", %{ballot: ballot} do
+    test "reject votes with a wrong candidate", %{election: election} do
       vote = %{"Doug" => 1}
-      assert {:error, "Candidate not on ballot"} = Schulze.cast_vote(ballot, vote)
+      assert {:error, "Candidate not on election"} = Schulze.cast_vote(election, vote)
     end
   end
 end

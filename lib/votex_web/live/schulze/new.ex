@@ -1,33 +1,28 @@
 defmodule VotexWeb.SchulzeLive.New do
+  alias Votex.Schulze
   use VotexWeb, :live_view
 
   def mount(_params, _session, socket) do
     {:ok, assign(socket, candidates: [{1, ""}], name: "")}
   end
 
-  def handle_event("submit", %{"schulze_ballot" => params}, socket) do
+  def handle_event("submit", %{"schulze_election" => params}, socket) do
     %{"name" => name} = params
     candidates = get_candidates(params) |> Enum.map(&elem(&1, 1))
 
-    cond do
-      name == "" ->
-        {:noreply, put_flash(socket, :error, "Name Can't be blank")}
+    case Schulze.create_election(name, candidates) do
+      {:error, reason} ->
+        socket |> put_flash(:error, reason) |> noreply()
 
-      length(candidates) < 2 ->
-        {:noreply, put_flash(socket, :error, "Need at least 2 candidates")}
-
-      Enum.uniq(candidates) != candidates ->
-        {:noreply, put_flash(socket, :error, "Candidate Names must be unique")}
-
-      Schulze.create_ballot(params) ->
-        {:noreply,
-         socket
-         |> put_flash(:error, "TODO: Create Ballot")
-         |> push_redirect(to: Routes.live_path(socket, VotexWeb.SchulzeLive.Index))}
+      {:ok, _} ->
+        socket
+        |> put_flash(:error, "TODO: Create Election")
+        |> push_redirect(to: Routes.live_path(socket, VotexWeb.SchulzeLive.Index))
+        |> noreply()
     end
   end
 
-  def handle_event("validate", %{"schulze_ballot" => params}, socket) do
+  def handle_event("validate", %{"schulze_election" => params}, socket) do
     %{"name" => name} = params
 
     candidates =
@@ -54,4 +49,6 @@ defmodule VotexWeb.SchulzeLive.New do
     |> Enum.map(fn {key, val} -> {String.slice(key, 10..-1) |> String.to_integer(), val} end)
     |> Enum.reject(fn {_, name} -> name == "" end)
   end
+
+  defp noreply(socket), do: {:noreply, socket}
 end

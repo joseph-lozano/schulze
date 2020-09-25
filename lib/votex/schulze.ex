@@ -1,51 +1,55 @@
 defmodule Votex.Schulze do
-  alias __MODULE__.Ballot
+  alias __MODULE__.Election
   alias Votex.Storage
 
-  def create_ballot(name, candidates) do
-    with {:ok, ballot} <- new_ballot(name, candidates),
-         :ok <- Storage.create(name, ballot) do
-      {:ok, ballot}
+  def create_election(name, candidates) do
+    with {:ok, election} <- new_election(name, candidates),
+         :ok <- Storage.create(name, election) do
+      VotexWeb.Endpoint.broadcast!(name, "new_election", %{election: election})
+      {:ok, election}
     end
   end
 
-  def save_ballot(name, ballot) do
-    Storage.save(name, ballot)
+  def save_election(name, election) do
+    VotexWeb.Endpoint.broadcast!(name, "election_updated", %{})
+    Storage.save(name, election)
   end
 
-  def all_ballots() do
+  def all_elections() do
     Storage.all()
   end
 
-  def get_ballot(name) do
+  def get_election(name) do
     Storage.load(name)
   end
 
-  @spec new_ballot(String.t(), Ballot.candidate_list()) ::
-          {:ok, Ballot.t()} | {:error, reason :: term()}
-  def new_ballot(name, candidates) do
-    if Enum.uniq(candidates) == candidates do
-      {:ok, %Ballot{name: name, candidates: candidates}}
-    else
-      {:error, "Candidates must be unique"}
+  @spec new_election(String.t(), Election.candidate_list()) ::
+          {:ok, Election.t()} | {:error, reason :: term()}
+  def new_election(name, candidates) do
+    cond do
+      Enum.uniq(candidates) != candidates -> {:error, "Candidates must be unique"}
+      length(candidates) < 2 -> {:error, "Need at least 2 candidates"}
+      String.contains?(name, ":") -> {:error, "Invalid Character in Election name."}
+      true -> {:ok, %Election{name: name, candidates: candidates}}
     end
   end
 
-  @spec cast_vote(Ballot.t(), Ballot.vote()) :: {:ok, Ballot.t()} | {:error, reason :: term()}
-  def cast_vote(ballot, vote) do
+  @spec cast_vote(Election.t(), Election.vote()) ::
+          {:ok, Election.t()} | {:error, reason :: term()}
+  def cast_vote(election, vote) do
     missing_votes =
-      (ballot.candidates -- Map.keys(vote))
+      (election.candidates -- Map.keys(vote))
       |> Enum.map(&{&1, 0})
       |> Enum.into(%{})
 
-    with :ok <- validate(ballot, vote) do
-      {:ok, Ballot.add_vote(ballot, Map.merge(vote, missing_votes))}
+    with :ok <- validate(election, vote) do
+      {:ok, Election.add_vote(election, Map.merge(vote, missing_votes))}
     end
   end
 
-  def get_results(ballot) do
-    candidates = ballot.candidates
-    votes = ballot.votes
+  def get_results(election) do
+    candidates = election.candidates
+    votes = election.votes
 
     pairs =
       for c1 <- candidates, c2 <- candidates do
@@ -138,10 +142,10 @@ defmodule Votex.Schulze do
     end
   end
 
-  def get_winner(%Ballot{} = ballot), do: get_results(ballot) |> get_winner(ballot)
+  def get_winner(%Election{} = election), do: get_results(election) |> get_winner(election)
 
-  def get_winner(results, ballot) when is_map(results) do
-    (ballot.candidates -- Map.keys(results))
+  def get_winner(results, election) when is_map(results) do
+    (election.candidates -- Map.keys(results))
     |> Enum.reduce(results, fn missing, acc -> Map.put(acc, missing, 0) end)
     |> Enum.group_by(fn {_candidate, strength} -> strength end, fn {candidate, _strength} ->
       candidate
@@ -150,11 +154,11 @@ defmodule Votex.Schulze do
     |> Enum.map(&elem(&1, 1))
   end
 
-  defp validate(ballot, vote) do
+  defp validate(election, vote) do
     Enum.reduce_while(vote, :ok, fn {candidate, preference}, acc ->
       cond do
         preference < 0 -> {:halt, {:error, "Preferences cannot be negative"}}
-        candidate not in ballot.candidates -> {:halt, {:error, "Candidate not on ballot"}}
+        candidate not in election.candidates -> {:halt, {:error, "Candidate not on election"}}
         true -> {:cont, acc}
       end
     end)

@@ -3,7 +3,7 @@ defmodule VotexWeb.SchulzeLive.Index do
   use VotexWeb, :live_view
 
   def mount(_params, _session, socket) do
-    ballots = Schulze.all_ballots()
-    {:ok, assign(socket, ballots: ballots)}
+    elections = Schulze.all_elections()
+    {:ok, assign(socket, elections: elections)}
   end
 end
