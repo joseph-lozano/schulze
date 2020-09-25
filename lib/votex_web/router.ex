@@ -18,6 +18,9 @@ defmodule VotexWeb.Router do
     pipe_through :browser
 
     live "/", PageLive, :index
+
+    live "/schulze", SchulzeLive.Index
+    live "/schulze/new", SchulzeLive.New
   end
 
   # Other scopes may use custom stacks.

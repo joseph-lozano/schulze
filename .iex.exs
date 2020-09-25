@@ -73,18 +73,7 @@ get_ballot = fn votes ->
   end)
 end
 
-winner_1 =
-  Schulze.get_winner(get_ballot.(votes_1))
-  |> IO.inspect(label: 1)
-
-winner_2 =
-  Schulze.get_winner(get_ballot.(votes_2))
-  |> IO.inspect(label: 2)
-
-winner_3 =
-  Schulze.get_winner(get_ballot.(votes_3))
-  |> IO.inspect(label: 3)
-
-winner_4 =
-  Schulze.get_winner(get_ballot.(votes_4))
-  |> IO.inspect(label: 4)
+winner_1 = Schulze.get_winner(get_ballot.(votes_1))
+winner_2 = Schulze.get_winner(get_ballot.(votes_2))
+winner_3 = Schulze.get_winner(get_ballot.(votes_3))
+winner_4 = Schulze.get_winner(get_ballot.(votes_4))
