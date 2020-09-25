@@ -7,7 +7,7 @@ defmodule Votex.SchulzeTest do
       candidates = ["Alice", "Bob", "Charlie"]
       assert {:ok, %Schulze.Ballot{} = ballot} = Schulze.new_ballot(candidates)
       assert ballot.candidates == candidates
-      assert ballot.votes == %{}
+      assert ballot.votes == []
     end
 
     test "fails if 2 candidates share a name" do
@@ -25,29 +25,11 @@ defmodule Votex.SchulzeTest do
     test "takes votes correctly", %{ballot: ballot} do
       vote1 = %{"Alice" => 3, "Bob" => 2, "Charlie" => 1}
       {:ok, ballot1} = Schulze.cast_vote(ballot, vote1)
-      assert ballot1.votes == %{[["Alice"], ["Bob"], ["Charlie"]] => 1}
-
-      vote2 = %{"Alice" => 1, "Bob" => 2, "Charlie" => 3}
-      {:ok, ballot2} = Schulze.cast_vote(ballot, vote2)
-      assert ballot2.votes == %{[["Charlie"], ["Bob"], ["Alice"]] => 1}
+      assert ballot1.votes == [vote1]
 
       vote2 = %{"Alice" => 3, "Bob" => 1, "Charlie" => 1}
-      {:ok, ballot2} = Schulze.cast_vote(ballot, vote2)
-      assert ballot2.votes == %{[["Alice"], ["Bob", "Charlie"]] => 1}
-
-      # A smae vote should increment by one
-      {:ok, ballot3} = Schulze.cast_vote(ballot2, vote2)
-      assert ballot3.votes == %{[["Alice"], ["Bob", "Charlie"]] => 2}
-    end
-
-    test "if candiates are missing, fill them in", %{ballot: ballot} do
-      vote1 = %{"Alice" => 3, "Bob" => 2}
-      {:ok, ballot1} = Schulze.cast_vote(ballot, vote1)
-      assert ballot1.votes == %{[["Alice"], ["Bob"], ["Charlie"]] => 1}
-
-      vote1 = %{"Alice" => 1}
-      {:ok, ballot1} = Schulze.cast_vote(ballot, vote1)
-      assert ballot1.votes == %{[["Alice"], ["Bob", "Charlie"]] => 1}
+      {:ok, ballot2} = Schulze.cast_vote(ballot1, vote2)
+      assert ballot2.votes == [vote2, vote1]
     end
 
     test "reject votes with a negative number", %{ballot: ballot} do
