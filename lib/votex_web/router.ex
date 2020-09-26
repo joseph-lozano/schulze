@@ -17,7 +17,7 @@ defmodule VotexWeb.Router do
   scope "/", VotexWeb do
     pipe_through :browser
 
-    live "/", PageLive, :index
+    live "/", HomeLive, :index
 
     live "/schulze", SchulzeLive.Index
     live "/schulze/new", SchulzeLive.New

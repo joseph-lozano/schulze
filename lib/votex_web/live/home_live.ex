@@ -1,4 +1,4 @@
-defmodule VotexWeb.PageLive do
+defmodule VotexWeb.HomeLive do
   @moduledoc false
   use VotexWeb, :live_view
 
