@@ -18,6 +18,22 @@ defmodule SchulzeTest do
       assert won_election.winners == ~w(E D C B A) |> Enum.map(&[&1])
     end
 
+    test "tie winners" do
+      votes = [
+        %{"A" => 5, "B" => 5}
+      ]
+
+      candidates = ~w(A B C D E)
+
+      assert {:ok, won_election} =
+               Schulze.create_election("TEST", candidates)
+               |> elem(1)
+               |> apply_votes(votes)
+               |> Schulze.get_winner()
+
+      assert won_election.winners == [~w(A B), ~w(C D E)]
+    end
+
     # https://electowiki.org/wiki/Schulze_method#Example_1
     test "Example 1" do
       candidates = ~w(A B C D E)
@@ -44,6 +60,82 @@ defmodule SchulzeTest do
       assert won_election.winners ==
                ~w(E A C B D)
                |> Enum.map(&[&1])
+    end
+
+    # https://electowiki.org/wiki/Schulze_method#Example_2
+    test "Example 2" do
+      candidates = ~w(A B C D)
+
+      compressed_votes = %{
+        ~w(A C B D) => 5,
+        ~w(A C D B) => 2,
+        ~w(A D C B) => 3,
+        ~w(B A C D) => 4,
+        ~w(C B D A) => 3,
+        ~w(C D B A) => 3,
+        ~w(D A C B) => 1,
+        ~w(D B A C) => 5,
+        ~w(D C B A) => 4
+      }
+
+      votes = get_votes(compressed_votes)
+
+      assert {:ok, won_election} =
+               Schulze.create_election("TEST 1", candidates)
+               |> elem(1)
+               |> apply_votes(votes)
+               |> Schulze.get_winner()
+
+      assert won_election.winners == ~w(D A C B) |> Enum.map(&[&1])
+    end
+
+    # https://electowiki.org/wiki/Schulze_method#Example_3
+    test "Example 3" do
+      candidates = ~w(A B C D E)
+
+      compressed_votes = %{
+        ~w(A B D E C) => 3,
+        ~w(A D E B C) => 5,
+        ~w(A D E C B) => 1,
+        ~w(B A D E C) => 2,
+        ~w(B D E C A) => 2,
+        ~w(C A B D E) => 4,
+        ~w(C B A D E) => 6,
+        ~w(D B E C A) => 2,
+        ~w(D E C A B) => 5
+      }
+
+      votes = get_votes(compressed_votes)
+
+      assert {:ok, won_election} =
+               Schulze.create_election("TEST 1", candidates)
+               |> elem(1)
+               |> apply_votes(votes)
+               |> Schulze.get_winner()
+
+      assert won_election.winners == ~w(B A D E C) |> Enum.map(&[&1])
+    end
+
+    # https://electowiki.org/wiki/Schulze_method#Example_4
+    test "Example 4" do
+      candidates = ~w(A B C D)
+
+      compressed_votes = %{
+        ~w(A B C D) => 3,
+        ~w(D A B C) => 2,
+        ~w(D B C A) => 2,
+        ~w(C B D A) => 2
+      }
+
+      votes = get_votes(compressed_votes)
+
+      assert {:ok, won_election} =
+               Schulze.create_election("TEST 1", candidates)
+               |> elem(1)
+               |> apply_votes(votes)
+               |> Schulze.get_winner()
+
+      assert won_election.winners == [~w(B D), ~w(A C)]
     end
 
     defp get_votes(votes) do
