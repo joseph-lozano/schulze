@@ -60,39 +60,36 @@ defmodule Schulze.Impl do
     end
   end
 
+  @spec get_pairs(list(a :: any())) :: list({any(), any()})
+  defp get_pairs(list) do
+    for c1 <- list, c2 <- list do
+      if c1 != c2, do: {c1, c2}
+    end
+    |> Enum.reject(&is_nil(&1))
+  end
+
   def get_results(election) do
     candidates = election.candidates
     votes = election.votes
-
-    pairs =
-      for c1 <- candidates, c2 <- candidates do
-        if c1 != c2, do: {c1, c2}
-      end
-      |> Enum.reject(&is_nil(&1))
-
-    pairwise_winners = get_pairwise_winners(votes, pairs)
+    pairs = get_pairs(candidates)
+    pairwise = Enum.map(pairs, fn {c1, c2} -> count_times_preferred(c1, c2, votes) end)
+    pairwise_winners = get_pairwise_winners(pairwise)
     g = build_graph(candidates, pairwise_winners)
 
     strongest_paths =
-      pairs
-      |> Enum.map(fn {c1, c2} = pair ->
-        weight = get_strongest_path_weight(g, c1, c2)
-        {pair, weight}
+      Enum.map(pairs, fn {c1, c2} = pair ->
+        {pair, get_strongest_path_weight(g, c1, c2)}
       end)
 
     strongest_paths
-    |> Enum.group_by(fn {{c1, c2}, _} -> Enum.sort([c1, c2]) end, fn {{c1, _}, strength} ->
-      {c1, strength}
-    end)
-    |> Enum.map(fn {_pairing, [{c1, c1_votes}, {c2, c2_votes}]} ->
-      cond do
-        c1_votes > c2_votes -> c1
-        c2_votes > c1_votes -> c2
-        c1_votes == c2_votes -> nil
-      end
-    end)
-    |> Enum.reject(&is_nil(&1))
+    |> get_pairwise_winners()
+    |> Enum.map(fn {{c1, _}, _} -> c1 end)
     |> Enum.frequencies()
+  end
+
+  defp sorted_pair({{c1, c2}, _}) do
+    [a, b] = Enum.sort([c1, c2])
+    {a, b}
   end
 
   # Counts the number of times `c1` is preferred to `c2` in `votes`
@@ -107,12 +104,9 @@ defmodule Schulze.Impl do
     {{c1, c2}, c1_preferred_times}
   end
 
-  defp get_pairwise_winners(votes, pairs) do
-    pairs
-    |> Enum.map(fn {c1, c2} -> count_times_preferred(c1, c2, votes) end)
-    |> Enum.group_by(fn {{c1, c2}, _} -> Enum.sort([c1, c2]) end, fn {{c1, _}, preference} ->
-      {c1, preference}
-    end)
+  defp get_pairwise_winners(pairwise) do
+    pairwise
+    |> Enum.group_by(&sorted_pair/1, fn {{c1, _}, preference} -> {c1, preference} end)
     |> Enum.map(fn {_pairing, [{c1, c1_votes}, {c2, c2_votes}]} ->
       cond do
         c1_votes > c2_votes -> {{c1, c2}, c1_votes}
@@ -163,6 +157,8 @@ defmodule Schulze.Impl do
   def get_winner(%Election{} = election), do: get_results(election) |> get_winner(election)
 
   def get_winner(results, election) when is_map(results) do
+    IO.inspect(results, label: "RESULTS")
+
     winners =
       (election.candidates -- Map.keys(results))
       |> Enum.reduce(results, fn missing, acc -> Map.put(acc, missing, 0) end)

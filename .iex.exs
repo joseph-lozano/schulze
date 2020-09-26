@@ -81,10 +81,10 @@ get_election = fn votes ->
   end)
 end
 
-# winner_1 = Schulze.get_winner(get_election.(votes_1))
-# winner_2 = Schulze.get_winner(get_election.(votes_2))
-# winner_3 = Schulze.get_winner(get_election.(votes_3))
-# winner_4 = Schulze.get_winner(get_election.(votes_4))
+winner_1 = Schulze.get_winner(get_election.(votes_1))
+winner_2 = Schulze.get_winner(get_election.(votes_2))
+winner_3 = Schulze.get_winner(get_election.(votes_3))
+winner_4 = Schulze.get_winner(get_election.(votes_4))
 
 # votes = 1_000
 
