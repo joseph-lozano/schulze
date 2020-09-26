@@ -3,7 +3,10 @@ defmodule SchulzeTest do
 
   describe "get_winner/1" do
     test "1 vote, 1 winner" do
-      votes = [%{"A" => 1}]
+      votes = [
+        %{"A" => 1, "B" => 2, "C" => 3, "D" => 4, "E" => 5}
+      ]
+
       candidates = ~w(A B C D E)
 
       assert {:ok, won_election} =
@@ -12,7 +15,7 @@ defmodule SchulzeTest do
                |> apply_votes(votes)
                |> Schulze.get_winner()
 
-      assert List.flatten(won_election.winners) == ~w(E A C B D)
+      assert won_election.winners == ~w(E D C B A) |> Enum.map(&[&1])
     end
 
     # https://electowiki.org/wiki/Schulze_method#Example_1
@@ -38,7 +41,9 @@ defmodule SchulzeTest do
                |> apply_votes(votes)
                |> Schulze.get_winner()
 
-      assert List.flatten(won_election.winners) == ~w(E A C B D)
+      assert won_election.winners ==
+               ~w(E A C B D)
+               |> Enum.map(&[&1])
     end
 
     defp get_votes(votes) do
@@ -46,6 +51,7 @@ defmodule SchulzeTest do
       |> Enum.flat_map(fn {ordering, times} ->
         Enum.map(1..times, fn _ ->
           ordering
+          |> Enum.reverse()
           |> Enum.with_index(1)
           |> Enum.reduce(%{}, fn {candidate, i}, acc ->
             Map.merge(%{candidate => i}, acc)

@@ -1,56 +1,53 @@
 alias Schulze.Impl
-candidates = %{A: "Alice", B: "Bob", C: "Charlie", D: "Doug", E: "Ellie"}
-candidate_names = Map.values(candidates)
-
 # https://electowiki.org/wiki/Schulze_method#Example_1
 votes_1 = %{
-  ~w(A C B E D)a => 5,
-  ~w(A D E C B)a => 5,
-  ~w(B E D A C)a => 8,
-  ~w(C A B E D)a => 3,
-  ~w(C A E B D)a => 7,
-  ~w(C B A D E)a => 2,
-  ~w(D C E B A)a => 7,
-  ~w(E B A D C)a => 8
+  ~w(A C B E D) => 5,
+  ~w(A D E C B) => 5,
+  ~w(B E D A C) => 8,
+  ~w(C A B E D) => 3,
+  ~w(C A E B D) => 7,
+  ~w(C B A D E) => 2,
+  ~w(D C E B A) => 7,
+  ~w(E B A D C) => 8
 }
 
 # https://electowiki.org/wiki/Schulze_method#Example_2
 votes_2 = %{
-  ~w(A C B D)a => 5,
-  ~w(A C D B)a => 2,
-  ~w(A D C B)a => 3,
-  ~w(B A C D)a => 4,
-  ~w(C B D A)a => 3,
-  ~w(C D B A)a => 3,
-  ~w(D A C B)a => 1,
-  ~w(D B A C)a => 5,
-  ~w(D C B A)a => 4
+  ~w(A C B D) => 5,
+  ~w(A C D B) => 2,
+  ~w(A D C B) => 3,
+  ~w(B A C D) => 4,
+  ~w(C B D A) => 3,
+  ~w(C D B A) => 3,
+  ~w(D A C B) => 1,
+  ~w(D B A C) => 5,
+  ~w(D C B A) => 4
 }
 
 # https://electowiki.org/wiki/Schulze_method#Example_3
 votes_3 = %{
-  ~w(A B D E C)a => 3,
-  ~w(A D E B C)a => 5,
-  ~w(A D E C B)a => 1,
-  ~w(B A D E C)a => 2,
-  ~w(B D E C A)a => 2,
-  ~w(C A B D E)a => 4,
-  ~w(C B A D E)a => 6,
-  ~w(D B E C A)a => 2,
-  ~w(D E C A B)a => 5
+  ~w(A B D E C) => 3,
+  ~w(A D E B C) => 5,
+  ~w(A D E C B) => 1,
+  ~w(B A D E C) => 2,
+  ~w(B D E C A) => 2,
+  ~w(C A B D E) => 4,
+  ~w(C B A D E) => 6,
+  ~w(D B E C A) => 2,
+  ~w(D E C A B) => 5
 }
 
 # https://electowiki.org/wiki/Schulze_method#Example_4
 votes_4 = %{
-  ~w(A B C D)a => 3,
-  ~w(D A B C)a => 2,
-  ~w(D B C A)a => 2,
-  ~w(C B D A)a => 2
+  ~w(A B C D) => 3,
+  ~w(D A B C) => 2,
+  ~w(D B C A) => 2,
+  ~w(C B D A) => 2
 }
 
 winners = fn num ->
   case num do
-    1 -> [["Ellie"], ["Alice"], ["Charlie"], ["Bob"], ["Doug"]]
+    1 -> [["E"], ["A"], ["C"], ["B"], ["D"]]
     _ -> []
   end
 end
@@ -66,21 +63,40 @@ test = fn election, num ->
   end
 end
 
-election_1 = get_election.(votes_1)
-{:ok, winner_1} = Schulze.get_winner(election_1)
-test.(winner_1, 1)
+get_votes = fn votes ->
+  votes
+  |> Enum.flat_map(fn {ordering, times} ->
+    Enum.map(1..times, fn _ ->
+      ordering
+      |> Enum.with_index(1)
+      |> Enum.reduce(%{}, fn {candidate, i}, acc ->
+        Map.merge(%{candidate => i}, acc)
+      end)
+    end)
+  end)
+end
 
-election_2 = get_election.(votes_2)
-{:ok, winner_2} = Schulze.get_winner(election_2)
-test.(winner_2, 2)
+apply_votes = fn election, votes ->
+  Enum.reduce(votes, election, fn vote, acc ->
+    with {:ok, b} <- Schulze.cast_vote(acc, vote) do
+      b
+    else
+      e ->
+        IO.inspect(vote)
+        IO.warn(inspect(e))
+        System.halt(1)
+    end
+  end)
+end
 
-election_3 = get_election.(votes_3)
-{:ok, winner_3} = Schulze.get_winner(election_3)
-test.(winner_3, 3)
+# {:ok, election_1} = Schulze.create_election("Example Election 1", ~w(A B C D E))
 
-election_4 = get_election.(votes_4)
-{:ok, winner_4} = Schulze.get_winner(election_4)
-test.(winner_4, 4)
+# {:ok, winner_1} =
+#   election_1
+#   |> apply_votes.(get_votes.(votes_1))
+#   |> Schulze.get_winner()
+
+# test.(winner_1, 1)
 
 # IO.puts("Generating random votes")
 

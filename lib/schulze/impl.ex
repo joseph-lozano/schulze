@@ -107,7 +107,7 @@ defmodule Schulze.Impl do
   defp get_pairwise_winners(pairwise) do
     pairwise
     |> Enum.group_by(&sorted_pair/1, fn {{c1, _}, preference} -> {c1, preference} end)
-    |> Enum.map(fn {_pairing, [{c1, c1_votes}, {c2, c2_votes}]} ->
+    |> Enum.map(fn {_pairing, [{c1, c1_votes}, {c2, c2_votes}] = foo} ->
       cond do
         c1_votes > c2_votes -> {{c1, c2}, c1_votes}
         c2_votes > c1_votes -> {{c2, c1}, c2_votes}
@@ -123,7 +123,7 @@ defmodule Schulze.Impl do
       |> Graph.add_vertices([candidates])
 
     Enum.reduce(pairwise_winners, g, fn {{c1, c2}, weight}, graph ->
-      Graph.add_edge(graph, c2, c1, weight: weight)
+      Graph.add_edge(graph, c1, c2, weight: weight)
     end)
   end
 
