@@ -3,8 +3,9 @@ defmodule Schulze.Repo.Migrations.Electio do
 
   def change do
     create table(:elections) do
-      add(:content, :binary)
+      add(:content, :binary, null: false)
       add(:winners, :jsonb)
+      add(:user_id, references(:users, on_delete: :nilify_all))
     end
   end
 end

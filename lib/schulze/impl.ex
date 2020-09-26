@@ -27,8 +27,8 @@ defmodule Schulze.Impl do
     Storage.delete(id)
   end
 
-  def all_elections() do
-    Storage.all()
+  def all_elections(id \\ nil) do
+    Storage.all(id)
   end
 
   def get_election(id) do

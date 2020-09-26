@@ -9,9 +9,10 @@ defmodule Schulze.Storage do
     field(:winners, {:array, {:array, :string}})
   end
 
-  def all() do
+  def all(id) do
     __MODULE__
     |> Ecto.Query.order_by(asc: :id)
+    |> Ecto.Query.where(user_id: ^id)
     |> Repo.all()
     |> Enum.map(& &1.content)
   end

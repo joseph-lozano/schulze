@@ -2,9 +2,12 @@ defmodule SchulzeWeb.SchulzeLive.Index do
   @moduledoc false
   use SchulzeWeb, :live_view
 
-  def mount(_params, _session, socket) do
+  def mount(_params, session, socket) do
+    user_token = Map.get(session, "user_token")
+    user = user_token && Schulze.Accounts.get_user_by_session_token(user_token)
+
     elections =
-      Schulze.all_elections()
+      Schulze.all_elections(user[:id])
       |> Enum.map(&{&1.id, &1})
 
     {:ok, assign(socket, elections: elections)}

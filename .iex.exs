@@ -1,48 +1,51 @@
 alias Schulze.Impl
-# https://electowiki.org/wiki/Schulze_method#Example_1
-votes_1 = %{
-  ~w(A C B E D) => 5,
-  ~w(A D E C B) => 5,
-  ~w(B E D A C) => 8,
-  ~w(C A B E D) => 3,
-  ~w(C A E B D) => 7,
-  ~w(C B A D E) => 2,
-  ~w(D C E B A) => 7,
-  ~w(E B A D C) => 8
-}
 
-# https://electowiki.org/wiki/Schulze_method#Example_2
-votes_2 = %{
-  ~w(A C B D) => 5,
-  ~w(A C D B) => 2,
-  ~w(A D C B) => 3,
-  ~w(B A C D) => 4,
-  ~w(C B D A) => 3,
-  ~w(C D B A) => 3,
-  ~w(D A C B) => 1,
-  ~w(D B A C) => 5,
-  ~w(D C B A) => 4
-}
+votes = %{
+  # https://electowiki.org/wiki/Schulze_method#Example_1
+  1 => %{
+    ~w(A C B E D) => 5,
+    ~w(A D E C B) => 5,
+    ~w(B E D A C) => 8,
+    ~w(C A B E D) => 3,
+    ~w(C A E B D) => 7,
+    ~w(C B A D E) => 2,
+    ~w(D C E B A) => 7,
+    ~w(E B A D C) => 8
+  },
 
-# https://electowiki.org/wiki/Schulze_method#Example_3
-votes_3 = %{
-  ~w(A B D E C) => 3,
-  ~w(A D E B C) => 5,
-  ~w(A D E C B) => 1,
-  ~w(B A D E C) => 2,
-  ~w(B D E C A) => 2,
-  ~w(C A B D E) => 4,
-  ~w(C B A D E) => 6,
-  ~w(D B E C A) => 2,
-  ~w(D E C A B) => 5
-}
+  # https://electowiki.org/wiki/Schulze_method#Example_2
+  2 => %{
+    ~w(A C B D) => 5,
+    ~w(A C D B) => 2,
+    ~w(A D C B) => 3,
+    ~w(B A C D) => 4,
+    ~w(C B D A) => 3,
+    ~w(C D B A) => 3,
+    ~w(D A C B) => 1,
+    ~w(D B A C) => 5,
+    ~w(D C B A) => 4
+  },
 
-# https://electowiki.org/wiki/Schulze_method#Example_4
-votes_4 = %{
-  ~w(A B C D) => 3,
-  ~w(D A B C) => 2,
-  ~w(D B C A) => 2,
-  ~w(C B D A) => 2
+  # https://electowiki.org/wiki/Schulze_method#Example_3
+  3 => %{
+    ~w(A B D E C) => 3,
+    ~w(A D E B C) => 5,
+    ~w(A D E C B) => 1,
+    ~w(B A D E C) => 2,
+    ~w(B D E C A) => 2,
+    ~w(C A B D E) => 4,
+    ~w(C B A D E) => 6,
+    ~w(D B E C A) => 2,
+    ~w(D E C A B) => 5
+  },
+
+  # https://electowiki.org/wiki/Schulze_method#Example_4
+  4 => %{
+    ~w(A B C D) => 3,
+    ~w(D A B C) => 2,
+    ~w(D B C A) => 2,
+    ~w(C B D A) => 2
+  }
 }
 
 winners = fn num ->
@@ -55,19 +58,20 @@ end
 test = fn election, num ->
   if election.winners == winners.(num) do
     IO.puts("Election #{num} ok")
-    Schulze.delete_election(election.id)
   else
-    IO.warn("Election #{num} failed checks")
+    IO.inspect(election)
+    IO.warn("Got #{inspect(election.winners)}, expected: #{inspect(winners.(num))}")
     Schulze.delete_election(election.id)
-    System.halt()
+    System.halt(1)
   end
 end
 
-get_votes = fn votes ->
+decompress = fn votes ->
   votes
   |> Enum.flat_map(fn {ordering, times} ->
     Enum.map(1..times, fn _ ->
       ordering
+      |> Enum.reverse()
       |> Enum.with_index(1)
       |> Enum.reduce(%{}, fn {candidate, i}, acc ->
         Map.merge(%{candidate => i}, acc)
@@ -78,16 +82,30 @@ end
 
 apply_votes = fn election, votes ->
   Enum.reduce(votes, election, fn vote, acc ->
-    with {:ok, b} <- Schulze.cast_vote(acc, vote) do
-      b
-    else
-      e ->
-        IO.inspect(vote)
-        IO.warn(inspect(e))
-        System.halt(1)
+    with {:ok, e} <- Schulze.cast_vote(acc, vote) do
+      e
     end
   end)
 end
+
+setup_election = fn num ->
+  votes =
+    votes
+    |> Map.get(num)
+    |> decompress.()
+
+  candidates =
+    hd(votes)
+    |> Map.keys()
+
+  {:ok, election} = Schulze.create_election("Sample Election ##{num}", candidates)
+  election = apply_votes.(election, votes)
+end
+
+setup_election.(1)
+setup_election.(2)
+setup_election.(3)
+setup_election.(4)
 
 # {:ok, election_1} = Schulze.create_election("Example Election 1", ~w(A B C D E))
 

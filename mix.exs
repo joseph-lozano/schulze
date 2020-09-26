@@ -5,8 +5,9 @@ defmodule Schulze.MixProject do
     [
       app: :schulze,
       version: "0.1.0",
-      elixir: "~> 1.7",
+      elixir: "~> 1.10",
       elixirc_paths: elixirc_paths(Mix.env()),
+      elixirc_options: [warnings_as_errors: true],
       compilers: [:phoenix] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
@@ -70,10 +71,12 @@ defmodule Schulze.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get", "cmd npm install --prefix assets", "compile"],
-      "ecto.reset": ["ecto.drop --quiet", "ecto.create", "ecto.migrate --quiet"],
-      test: ["ecto.reset", "test"],
+      setup: ["deps.get", "cmd npm install --prefix assets", "ecto.setup"],
+      "ecto.setup": ["ecto.create --quiet", "ecto.migrate --quiet"],
+      "ecto.reset": ["ecto.drop --quiet", "ecto.setup"],
+      test: ["ecto.setup", "test"],
       lint: [
+        # --warnings as errors will not work if the code is already compiles
         "clean",
         "compile --warnings-as-errors",
         "format --check-formatted",
