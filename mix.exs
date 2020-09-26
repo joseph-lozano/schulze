@@ -35,7 +35,7 @@ defmodule Votex.MixProject do
     [
       # Phoenix Deps
       {:phoenix, "~> 1.5.5"},
-      {:phoenix_live_view, "~> 0.14.6"},
+      {:phoenix_live_view, "~> 0.14.7"},
       {:floki, ">= 0.27.0", only: :test},
       {:phoenix_html, "~> 2.11"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
@@ -46,6 +46,11 @@ defmodule Votex.MixProject do
       {:plug_cowboy, "~> 2.0"},
       {:postgrex, "~> 0.15.6"},
       {:ecto_sql, "~> 3.4"},
+
+      # Static Analysis
+      {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
+
       # App Deps
       {:typed_struct, "~> 0.2.1"},
       {:accessible, "~> 0.2.1"},

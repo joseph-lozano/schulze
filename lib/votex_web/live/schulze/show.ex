@@ -1,4 +1,5 @@
 defmodule VotexWeb.SchulzeLive.Show do
+  @moduledoc false
   use VotexWeb, :live_view
   alias Votex.Schulze
 
@@ -20,12 +21,17 @@ defmodule VotexWeb.SchulzeLive.Show do
   def handle_event("submit", %{"ballot" => vote}, socket) do
     election = socket.assigns.election
 
-    with {:ok, election} <- Schulze.cast_vote(election, vote),
-         {:ok, _election} <- Schulze.update_election(election.name, election) do
-      socket
-      |> push_redirect(to: Routes.live_path(socket, VotexWeb.SchulzeLive.Index))
-      |> put_flash(:info, "Vote Cast")
-      |> no_reply()
+    case Schulze.cast_vote(election, vote) do
+      {:ok, _} ->
+        socket
+        |> push_redirect(to: Routes.live_path(socket, VotexWeb.SchulzeLive.Index))
+        |> put_flash(:info, "Vote Cast")
+        |> no_reply()
+
+      {:errror, reason} ->
+        socket
+        |> put_flash(:error, "Error Casting Vote")
+        |> no_reply()
     end
   end
 

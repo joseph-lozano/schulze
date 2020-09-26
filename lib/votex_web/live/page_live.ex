@@ -1,4 +1,5 @@
 defmodule VotexWeb.PageLive do
+  @moduledoc false
   use VotexWeb, :live_view
 
   @impl true

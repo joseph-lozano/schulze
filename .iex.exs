@@ -71,6 +71,7 @@ get_election = fn votes ->
   name = first_vote <> "_#{Enum.count(votes)}"
 
   candidate_names = votes |> Map.keys() |> hd |> Enum.map(&Map.get(candidates, &1))
+
   {:ok, election} = Schulze.create_election(name, candidate_names)
 
   Enum.reduce(get_votes.(votes), election, fn vote, acc ->

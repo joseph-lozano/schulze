@@ -1,4 +1,5 @@
 defmodule VotexWeb.SchulzeLive.Index do
+  @moduledoc false
   alias Votex.Schulze
   use VotexWeb, :live_view
 

@@ -1,4 +1,5 @@
 defmodule Votex.Storage do
+  @moduledoc "Wrapper for storing Elections"
   use Ecto.Schema
   alias Votex.Repo
   require Ecto.Query
@@ -22,7 +23,6 @@ defmodule Votex.Storage do
       {:ok, %__MODULE__{content: content}} -> {:ok, content}
       e -> e
     end
-    |> IO.inspect()
   end
 
   def create(term) do
@@ -35,6 +35,11 @@ defmodule Votex.Storage do
       Repo.update(changeset(storage, %{content: put_in(content.id, id)}))
     end)
     |> Repo.transaction()
+    |> case do
+      {:ok, %{get_id: %__MODULE__{content: content}}} -> {:ok, content}
+      e -> e
+    end
+    |> IO.inspect(label: "CREATE 2")
   end
 
   def get(id) do

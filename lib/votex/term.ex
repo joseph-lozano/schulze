@@ -1,4 +1,6 @@
 defmodule Votex.Term do
+  @moduledoc "Ecto Type for storing Elixir Terms"
+
   @behaviour Ecto.Type
   def type, do: :binary
 

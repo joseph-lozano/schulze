@@ -1,4 +1,5 @@
 defmodule Votex.Schulze do
+  @moduledoc "Module for running Schulze method elections"
   alias __MODULE__.Election
   alias Votex.Storage
 
@@ -55,7 +56,8 @@ defmodule Votex.Schulze do
       |> Enum.into(%{})
 
     with :ok <- validate(election, vote) do
-      {:ok, Election.add_vote(election, Map.merge(vote, missing_votes))}
+      Election.add_vote(election, Map.merge(vote, missing_votes))
+      |> update_election()
     end
   end
 
@@ -94,18 +96,24 @@ defmodule Votex.Schulze do
     |> Enum.frequencies()
   end
 
+  @doc """
+  Counts the number of times `c1` is preferred to `c2` in `votes`
+  """
+
+  defp count_times_preferred(c1, c2, votes) do
+    c1_preferred_times =
+      Enum.reduce(votes, 0, fn vote, acc ->
+        c1_vote = Map.get(vote, c1, 0)
+        c2_vote = Map.get(vote, c2, 0)
+        if c1_vote > c2_vote, do: acc + 1, else: acc
+      end)
+
+    {{c1, c2}, c1_preferred_times}
+  end
+
   defp get_pairwise_winners(votes, pairs) do
     pairs
-    |> Enum.map(fn {c1, c2} ->
-      c1_preferred =
-        Enum.reduce(votes, 0, fn vote, acc ->
-          c1_vote = Map.get(vote, c1, 0)
-          c2_vote = Map.get(vote, c2, 0)
-          if c1_vote > c2_vote, do: acc + 1, else: acc
-        end)
-
-      {{c1, c2}, c1_preferred}
-    end)
+    |> Enum.map(fn {c1, c2} -> count_times_preferred(c1, c2, votes) end)
     |> Enum.group_by(fn {{c1, c2}, _} -> Enum.sort([c1, c2]) end, fn {{c1, _}, preference} ->
       {c1, preference}
     end)
@@ -129,6 +137,20 @@ defmodule Votex.Schulze do
     end)
   end
 
+  defp get_path_strength(graph, path) do
+    path
+    |> Enum.with_index()
+    |> Enum.reduce([], fn {node, i}, acc ->
+      next = Enum.at(path, i + 1)
+
+      case next do
+        nil -> acc
+        _ -> acc ++ Graph.edges(graph, node, next)
+      end
+    end)
+    |> Enum.min_by(& &1.weight)
+  end
+
   defp get_strongest_path_weight(graph, node1, node2) do
     case Graph.get_paths(graph, node1, node2) do
       [] ->
@@ -136,19 +158,7 @@ defmodule Votex.Schulze do
 
       paths ->
         paths
-        |> Enum.map(fn path ->
-          path
-          |> Enum.with_index()
-          |> Enum.reduce([], fn {node, i}, acc ->
-            next = Enum.at(path, i + 1)
-
-            case next do
-              nil -> acc
-              _ -> acc ++ Graph.edges(graph, node, next)
-            end
-          end)
-          |> Enum.min_by(& &1.weight)
-        end)
+        |> Enum.map(&get_path_strength(graph, &1))
         |> Enum.max_by(& &1.weight)
         |> Map.get(:weight)
     end
