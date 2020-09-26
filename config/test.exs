@@ -17,6 +17,7 @@ config :schulze, Schulze.Repo,
   username: "postgres",
   password: "postgres",
   hostname: "localhost",
-  port: "5432"
+  port: "5432",
+  pool: Ecto.Adapters.SQL.Sandbox
 
 config :schulze, Schulze.Mailer, adapter: Bamboo.TestAdapter

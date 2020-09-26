@@ -1,5 +1,5 @@
 defmodule SchulzeTest do
-  use ExUnit.Case
+  use Schulze.DataCase
   alias Schulze.Impl
 
   describe "get_winner/1" do
