@@ -22,19 +22,21 @@ defmodule SchulzeWeb.UserSettingsControllerTest do
 
   describe "PUT /users/settings/update_password" do
     test "updates the user password and resets tokens", %{conn: conn, user: user} do
+      new_passowrd = "newValid%Password"
+
       new_password_conn =
         put(conn, Routes.user_settings_path(conn, :update_password), %{
           "current_password" => valid_user_password(),
           "user" => %{
-            "password" => "new valid password",
-            "password_confirmation" => "new valid password"
+            "password" => new_passowrd,
+            "password_confirmation" => new_passowrd
           }
         })
 
       assert redirected_to(new_password_conn) == Routes.user_settings_path(conn, :edit)
       assert get_session(new_password_conn, :user_token) != get_session(conn, :user_token)
       assert get_flash(new_password_conn, :info) =~ "Password updated successfully"
-      assert Accounts.get_user_by_email_and_password(user.email, "new valid password")
+      assert Accounts.get_user_by_email_and_password(user.email, new_passowrd)
     end
 
     test "does not update password on invalid data", %{conn: conn} do
@@ -49,7 +51,8 @@ defmodule SchulzeWeb.UserSettingsControllerTest do
 
       response = html_response(old_password_conn, 200)
       assert response =~ "<h1>Settings</h1>"
-      assert response =~ "should be at least 12 character(s)"
+      assert response =~ "at least one digit or punctuation character"
+      assert response =~ "at least one upper case character"
       assert response =~ "does not match password"
       assert response =~ "is not valid"
 

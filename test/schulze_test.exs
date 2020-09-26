@@ -1,6 +1,5 @@
 defmodule SchulzeTest do
   use Schulze.DataCase
-  alias Schulze.Impl
 
   describe "get_winner/1" do
     test "1 vote, 1 winner" do
