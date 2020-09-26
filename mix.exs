@@ -73,7 +73,13 @@ defmodule Schulze.MixProject do
       setup: ["deps.get", "cmd npm install --prefix assets", "compile"],
       "ecto.reset": ["ecto.drop --quiet", "ecto.create", "ecto.migrate --quiet"],
       test: ["ecto.reset", "test"],
-      lint: ["format --check-formatted", "credo", "dialyzer"]
+      lint: [
+        "clean",
+        "compile --warnings-as-errors",
+        "format --check-formatted",
+        "credo",
+        "dialyzer"
+      ]
     ]
   end
 end

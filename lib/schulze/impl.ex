@@ -107,7 +107,7 @@ defmodule Schulze.Impl do
   defp get_pairwise_winners(pairwise) do
     pairwise
     |> Enum.group_by(&sorted_pair/1, fn {{c1, _}, preference} -> {c1, preference} end)
-    |> Enum.map(fn {_pairing, [{c1, c1_votes}, {c2, c2_votes}] = foo} ->
+    |> Enum.map(fn {_pairing, [{c1, c1_votes}, {c2, c2_votes}]} ->
       cond do
         c1_votes > c2_votes -> {{c1, c2}, c1_votes}
         c2_votes > c1_votes -> {{c2, c1}, c2_votes}
