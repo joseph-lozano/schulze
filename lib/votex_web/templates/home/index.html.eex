@@ -1,6 +1,0 @@
-<h1>Votex</h1>
-<ul>
-  <li>
-    <%= link "Schulze", to: Routes.live_path(@conn, VotexWeb.SchulzeLive.Index) %>
-  </li>
-</ul>

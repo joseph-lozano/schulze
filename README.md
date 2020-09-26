@@ -1,4 +1,4 @@
-# Votex
+# Schulze
 
 To start your Phoenix server:
 

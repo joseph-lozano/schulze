@@ -1,4 +1,4 @@
-alias Votex.Schulze
+alias Schulze.Impl
 candidates = %{A: "Alice", B: "Bob", C: "Charlie", D: "Doug", E: "Ellie"}
 candidate_names = Map.values(candidates)
 

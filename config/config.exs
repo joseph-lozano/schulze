@@ -7,14 +7,14 @@
 # General application configuration
 use Mix.Config
 
-config :votex, ecto_repos: [Votex.Repo]
+config :schulze, ecto_repos: [Schulze.Repo]
 
 # Configures the endpoint
-config :votex, VotexWeb.Endpoint,
+config :schulze, SchulzeWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "mPN0z9Zg1q/4Tve7uvzYUj9I/hU+3i8BNNoEVoKJDkYd/h+kjU3CAr8/Vr3Bx13N",
-  render_errors: [view: VotexWeb.ErrorView, accepts: ~w(html json), layout: false],
-  pubsub_server: Votex.PubSub,
+  render_errors: [view: SchulzeWeb.ErrorView, accepts: ~w(html json), layout: false],
+  pubsub_server: Schulze.PubSub,
   live_view: [signing_salt: "Ekqbfla8"]
 
 # Configures Elixir's Logger

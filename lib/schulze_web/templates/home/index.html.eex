@@ -1,0 +1,6 @@
+<h1>Schulze</h1>
+<ul>
+  <li>
+    <%= link "Elections", to: Routes.live_path(@conn, SchulzeWeb.SchulzeLive.Index) %>
+  </li>
+</ul>

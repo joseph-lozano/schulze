@@ -11,7 +11,7 @@ secret_key_base =
     You can generate one by calling: mix phx.gen.secret
     """
 
-config :votex, VotexWeb.Endpoint,
+config :schulze, SchulzeWeb.Endpoint,
   http: [
     port: String.to_integer(System.get_env("PORT") || "4000"),
     transport_options: [socket_opts: [:inet6]]
@@ -25,7 +25,7 @@ from_email =
     You must set one in order for user account emails to work.
     """
 
-config :votex, :from_email, from_email
+config :schulze, :from_email, from_email
 
 sendgrid_api =
   System.get_env("SENDGRID_API_KEY") ||
@@ -34,7 +34,7 @@ sendgrid_api =
     You must set one in order for user account emails to work.
     """
 
-config :votex, Votex.Mailer,
+config :schulze, Schulze.Mailer,
   adapter: Bamboo.SendGridAdapter,
   api_key: System.get_env("SENDGRID_API_KEY")
 
@@ -43,7 +43,7 @@ config :votex, Votex.Mailer,
 # If you are doing OTP releases, you need to instruct Phoenix
 # to start each relevant endpoint:
 #
-#     config :votex, VotexWeb.Endpoint, server: true
+#     config :schulze, SchulzeWeb.Endpoint, server: true
 #
 # Then you can assemble a release by calling `mix release`.
 # See `mix help release` for more information.

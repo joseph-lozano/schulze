@@ -1,6 +1,6 @@
-defmodule Votex.SchulzeTest do
+defmodule SchulzeTest do
   use ExUnit.Case
-  alias Votex.Schulze
+  alias Schulze.Impl
 
   describe "create_election/1" do
     test "takes params" do

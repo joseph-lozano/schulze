@@ -1,9 +1,9 @@
-defmodule Votex.MixProject do
+defmodule Schulze.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :votex,
+      app: :schulze,
       version: "0.1.0",
       elixir: "~> 1.7",
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -19,7 +19,7 @@ defmodule Votex.MixProject do
   # Type `mix help compile.app` for more information.
   def application do
     [
-      mod: {Votex.Application, []},
+      mod: {Schulze.Application, []},
       extra_applications: [:logger, :runtime_tools]
     ]
   end

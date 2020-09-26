@@ -1,4 +1,4 @@
-defmodule Votex.Repo.Migrations.Electio do
+defmodule Schulze.Repo.Migrations.Electio do
   use Ecto.Migration
 
   def change do

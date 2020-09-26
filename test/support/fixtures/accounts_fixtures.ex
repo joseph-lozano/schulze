@@ -1,7 +1,7 @@
-defmodule Votex.AccountsFixtures do
+defmodule Schulze.AccountsFixtures do
   @moduledoc """
   This module defines test helpers for creating
-  entities via the `Votex.Accounts` context.
+  entities via the `Schulze.Accounts` context.
   """
 
   def unique_user_email, do: "user#{System.unique_integer()}@example.com"
@@ -14,7 +14,7 @@ defmodule Votex.AccountsFixtures do
         email: unique_user_email(),
         password: valid_user_password()
       })
-      |> Votex.Accounts.register_user()
+      |> Schulze.Accounts.register_user()
 
     user
   end
