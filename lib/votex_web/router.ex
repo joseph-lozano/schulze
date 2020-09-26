@@ -20,7 +20,7 @@ defmodule VotexWeb.Router do
   scope "/", VotexWeb do
     pipe_through :browser
 
-    live "/", HomeLive, :index
+    get "/", HomeController, :index
 
     live "/schulze", SchulzeLive.Index
     live "/schulze/new", SchulzeLive.New
@@ -45,6 +45,7 @@ defmodule VotexWeb.Router do
     scope "/" do
       pipe_through :browser
       live_dashboard "/dashboard", metrics: VotexWeb.Telemetry
+      forward "/sent_emails", Bamboo.SentEmailViewerPlug
     end
   end
 
@@ -75,6 +76,7 @@ defmodule VotexWeb.Router do
   scope "/", VotexWeb do
     pipe_through [:browser]
 
+    get "/users/log_out", UserSessionController, :delete
     delete "/users/log_out", UserSessionController, :delete
     get "/users/confirm", UserConfirmationController, :new
     post "/users/confirm", UserConfirmationController, :create

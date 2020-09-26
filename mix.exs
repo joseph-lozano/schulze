@@ -53,11 +53,12 @@ defmodule Votex.MixProject do
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
 
       # App Deps
+      {:libgraph, "~> 0.13.3"},
       {:phx_gen_auth, "~> 0.5", only: [:dev], runtime: false},
       {:bcrypt_elixir, "~> 2.0"},
+      {:bamboo, "~> 1.5"},
       {:typed_struct, "~> 0.2.1"},
-      {:accessible, "~> 0.2.1"},
-      {:libgraph, "~> 0.13.3"}
+      {:accessible, "~> 0.2.1"}
     ]
   end
 
@@ -69,8 +70,8 @@ defmodule Votex.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get", "cmd npm install --prefix assets"],
-      "ecto.reset": ["ecto.drop --quiet", "ecto.create --quiet", "ecto.migrate --quiet"],
+      setup: ["deps.get", "cmd npm install --prefix assets", "compile"],
+      "ecto.reset": ["ecto.drop --quiet", "ecto.create", "ecto.migrate --quiet"],
       test: ["ecto.reset", "test"],
       lint: ["format --check-formatted", "credo", "dialyzer"]
     ]

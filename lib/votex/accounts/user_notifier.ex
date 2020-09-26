@@ -1,21 +1,31 @@
 defmodule Votex.Accounts.UserNotifier do
+  alias Votex.Mailer
+  import Bamboo.Email
   # For simplicity, this module simply logs messages to the terminal.
   # You should replace it by a proper email or notification tool, such as:
   #
   #   * Swoosh - https://hexdocs.pm/swoosh
   #   * Bamboo - https://hexdocs.pm/bamboo
   #
-  defp deliver(to, body) do
+  defp deliver(to, subject, body) do
     require Logger
     Logger.debug(body)
-    {:ok, %{to: to, body: body}}
+
+    new_email(to: to, subject: subject, from: from(), text_body: body)
+    |> Mailer.deliver_now()
+    |> case do
+      %Bamboo.Email{} = email -> {:ok, email}
+      failure -> failure
+    end
   end
+
+  defp from(), do: Application.get_env(:votex, :from_email, "noreply@votex")
 
   @doc """
   Deliver instructions to confirm account.
   """
   def deliver_confirmation_instructions(user, url) do
-    deliver(user.email, """
+    deliver(user.email, "Confirm Your Account", """
 
     ==============================
 
@@ -35,7 +45,7 @@ defmodule Votex.Accounts.UserNotifier do
   Deliver instructions to reset a user password.
   """
   def deliver_reset_password_instructions(user, url) do
-    deliver(user.email, """
+    deliver(user.email, "Your Password Reset Instructions", """
 
     ==============================
 
@@ -55,7 +65,7 @@ defmodule Votex.Accounts.UserNotifier do
   Deliver instructions to update a user email.
   """
   def deliver_update_email_instructions(user, url) do
-    deliver(user.email, """
+    deliver(user.email, "Confirm Your Email Update", """
 
     ==============================
 

@@ -18,3 +18,5 @@ config :votex, Votex.Repo,
   password: "postgres",
   hostname: "localhost",
   port: "5432"
+
+config :votex, Votex.Mailer, adapter: Bamboo.TestAdapter

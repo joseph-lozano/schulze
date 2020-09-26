@@ -18,6 +18,26 @@ config :votex, VotexWeb.Endpoint,
   ],
   secret_key_base: secret_key_base
 
+from_email =
+  System.get_env("FROM_EMAIL") ||
+    raise """
+    environment variable FROM_EMAIL is missing.
+    You must set one in order for user account emails to work.
+    """
+
+config :votex, :from_email, from_email
+
+sendgrid_api =
+  System.get_env("SENDGRID_API_KEY") ||
+    raise """
+    environment variable SENDGRID_API_KEY is missing.
+    You must set one in order for user account emails to work.
+    """
+
+config :votex, Votex.Mailer,
+  adapter: Bamboo.SendGridAdapter,
+  api_key: System.get_env("SENDGRID_API_KEY")
+
 # ## Using releases (Elixir v1.9+)
 #
 # If you are doing OTP releases, you need to instruct Phoenix
