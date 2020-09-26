@@ -12,9 +12,9 @@ defmodule Schulze do
   end
 
   defdelegate all_elections, to: __MODULE__.Impl
-  defdelegate create_election(arg1, arg2), to: __MODULE__.Impl
-  defdelegate get_election(arg), to: __MODULE__.Impl
-  defdelegate delete_election(arg), to: __MODULE__.Impl
-  defdelegate cast_vote(arg1, arg2), to: __MODULE__.Impl
-  defdelegate get_winner(arg), to: __MODULE__.Impl
+  defdelegate create_election(name, candidates), to: __MODULE__.Impl
+  defdelegate get_election(id), to: __MODULE__.Impl
+  defdelegate delete_election(id), to: __MODULE__.Impl
+  defdelegate cast_vote(election, vote), to: __MODULE__.Impl
+  defdelegate get_winner(election), to: __MODULE__.Impl
 end

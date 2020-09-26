@@ -2,28 +2,85 @@ defmodule SchulzeTest do
   use ExUnit.Case
   alias Schulze.Impl
 
-  describe "create_election/1" do
-    test "takes params" do
+  describe "get_winner/1" do
+    test "1 vote, 1 winner" do
+      votes = [%{"A" => 1}]
+      candidates = ~w(A B C D E)
+
+      assert {:ok, won_election} =
+               Schulze.create_election("TEST", candidates)
+               |> elem(1)
+               |> apply_votes(votes)
+               |> Schulze.get_winner()
+
+      assert List.flatten(won_election.winners) == ~w(E A C B D)
+    end
+
+    # https://electowiki.org/wiki/Schulze_method#Example_1
+    test "Example 1" do
+      candidates = ~w(A B C D E)
+
+      compressed_votes = %{
+        ~w(A C B E D) => 5,
+        ~w(A D E C B) => 5,
+        ~w(B E D A C) => 8,
+        ~w(C A B E D) => 3,
+        ~w(C A E B D) => 7,
+        ~w(C B A D E) => 2,
+        ~w(D C E B A) => 7,
+        ~w(E B A D C) => 8
+      }
+
+      votes = get_votes(compressed_votes)
+
+      assert {:ok, won_election} =
+               Schulze.create_election("TEST 1", candidates)
+               |> elem(1)
+               |> apply_votes(votes)
+               |> Schulze.get_winner()
+
+      assert List.flatten(won_election.winners) == ~w(E A C B D)
+    end
+
+    defp get_votes(votes) do
+      votes
+      |> Enum.flat_map(fn {ordering, times} ->
+        Enum.map(1..times, fn _ ->
+          ordering
+          |> Enum.with_index(1)
+          |> Enum.reduce(%{}, fn {candidate, i}, acc ->
+            Map.merge(%{candidate => i}, acc)
+          end)
+        end)
+      end)
+    end
+
+    defp apply_votes(election, votes) do
+      Enum.reduce(votes, election, fn vote, acc ->
+        with {:ok, b} <- Schulze.cast_vote(acc, vote) do
+          b
+        end
+      end)
     end
   end
 
   describe "new_election/1" do
     test "starts a election with the candidates and no votes" do
       candidates = ["Alice", "Bob", "Charlie"]
-      assert {:ok, %Schulze.Election{} = election} = Schulze.new_election("test", candidates)
+      assert {:ok, %Schulze.Election{} = election} = Schulze.create_election("test", candidates)
       assert election.candidates == candidates
       assert election.votes == []
     end
 
     test "fails if 2 candidates share a name" do
       candidates = ["Alice", "Alice", "Bob", "Charlie"]
-      assert {:error, "Candidates must be unique"} = Schulze.new_election("test", candidates)
+      assert {:error, "Candidates must be unique"} = Schulze.create_election("test", candidates)
     end
   end
 
   describe "cast_vote/2" do
     setup do
-      {:ok, election} = Schulze.new_election("test", ["Alice", "Bob", "Charlie"])
+      {:ok, election} = Schulze.create_election("test", ["Alice", "Bob", "Charlie"])
       %{election: election}
     end
 

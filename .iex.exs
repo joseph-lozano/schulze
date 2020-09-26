@@ -48,45 +48,39 @@ votes_4 = %{
   ~w(C B D A)a => 2
 }
 
-get_votes = fn votes ->
-  votes
-  |> Enum.flat_map(fn {ordering, times} ->
-    Enum.map(1..times, fn _ ->
-      ordering
-      |> Enum.with_index(1)
-      |> Enum.reduce(%{}, fn {candidate, i}, acc ->
-        candidate = Map.get(candidates, candidate)
-        Map.merge(%{candidate => i}, acc)
-      end)
-    end)
-  end)
+winners = fn num ->
+  case num do
+    1 -> [["Ellie"], ["Alice"], ["Charlie"], ["Bob"], ["Doug"]]
+    _ -> []
+  end
 end
 
-get_election = fn votes ->
-  first_vote =
-    hd(Map.keys(votes))
-    |> Enum.map(&Atom.to_string/1)
-    |> Enum.join("")
-
-  name = first_vote <> "_#{Enum.count(votes)}"
-
-  candidate_names = votes |> Map.keys() |> hd |> Enum.map(&Map.get(candidates, &1))
-
-  {:ok, election} = Schulze.create_election(name, candidate_names)
-
-  Enum.reduce(get_votes.(votes), election, fn vote, acc ->
-    with {:ok, b} <- Schulze.cast_vote(acc, vote) do
-      b
-    end
-  end)
+test = fn election, num ->
+  if election.winners == winners.(num) do
+    IO.puts("Election #{num} ok")
+    Schulze.delete_election(election.id)
+  else
+    IO.warn("Election #{num} failed checks")
+    Schulze.delete_election(election.id)
+    System.halt()
+  end
 end
 
-winner_1 = Schulze.get_winner(get_election.(votes_1))
-winner_2 = Schulze.get_winner(get_election.(votes_2))
-winner_3 = Schulze.get_winner(get_election.(votes_3))
-winner_4 = Schulze.get_winner(get_election.(votes_4))
+election_1 = get_election.(votes_1)
+{:ok, winner_1} = Schulze.get_winner(election_1)
+test.(winner_1, 1)
 
-# votes = 1_000
+election_2 = get_election.(votes_2)
+{:ok, winner_2} = Schulze.get_winner(election_2)
+test.(winner_2, 2)
+
+election_3 = get_election.(votes_3)
+{:ok, winner_3} = Schulze.get_winner(election_3)
+test.(winner_3, 3)
+
+election_4 = get_election.(votes_4)
+{:ok, winner_4} = Schulze.get_winner(election_4)
+test.(winner_4, 4)
 
 # IO.puts("Generating random votes")
 

@@ -1,4 +1,5 @@
 defmodule SchulzeWeb.UserAuth do
+  @moduledoc false
   import Plug.Conn
   import Phoenix.Controller
 

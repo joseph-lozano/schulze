@@ -49,7 +49,7 @@ defmodule Schulze.MixProject do
       {:ecto_sql, "~> 3.4"},
 
       # Static Analysis
-      {:credo, "~> 1.1", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.1", only: [:dev], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
 
       # App Deps

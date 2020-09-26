@@ -1,4 +1,6 @@
 defmodule Schulze.Accounts.UserNotifier do
+  @moduledoc false
+
   alias Schulze.Mailer
   import Bamboo.Email
   # For simplicity, this module simply logs messages to the terminal.

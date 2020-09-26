@@ -157,8 +157,6 @@ defmodule Schulze.Impl do
   def get_winner(%Election{} = election), do: get_results(election) |> get_winner(election)
 
   def get_winner(results, election) when is_map(results) do
-    IO.inspect(results, label: "RESULTS")
-
     winners =
       (election.candidates -- Map.keys(results))
       |> Enum.reduce(results, fn missing, acc -> Map.put(acc, missing, 0) end)
