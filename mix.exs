@@ -68,7 +68,8 @@ defmodule Votex.MixProject do
     [
       setup: ["deps.get", "cmd npm install --prefix assets"],
       "ecto.reset": ["ecto.drop --quiet", "ecto.create --quiet", "ecto.migrate --quiet"],
-      test: ["ecto.reset", "test"]
+      test: ["ecto.reset", "test"],
+      lint: ["format --check-formatted", "credo", "dialyzer"]
     ]
   end
 end

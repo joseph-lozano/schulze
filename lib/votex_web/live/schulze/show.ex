@@ -28,7 +28,7 @@ defmodule VotexWeb.SchulzeLive.Show do
         |> put_flash(:info, "Vote Cast")
         |> no_reply()
 
-      {:errror, reason} ->
+      {:error, _reason} ->
         socket
         |> put_flash(:error, "Error Casting Vote")
         |> no_reply()

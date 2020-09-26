@@ -39,7 +39,6 @@ defmodule Votex.Storage do
       {:ok, %{get_id: %__MODULE__{content: content}}} -> {:ok, content}
       e -> e
     end
-    |> IO.inspect(label: "CREATE 2")
   end
 
   def get(id) do

@@ -96,10 +96,7 @@ defmodule Votex.Schulze do
     |> Enum.frequencies()
   end
 
-  @doc """
-  Counts the number of times `c1` is preferred to `c2` in `votes`
-  """
-
+  # Counts the number of times `c1` is preferred to `c2` in `votes`
   defp count_times_preferred(c1, c2, votes) do
     c1_preferred_times =
       Enum.reduce(votes, 0, fn vote, acc ->
