@@ -11,7 +11,7 @@ defmodule Schulze do
     SchulzeWeb.Endpoint.subscribe(topic)
   end
 
-  # defdelegate all_elections(), to: __MODULE__.Impl
+  defdelegate all_elections(), to: __MODULE__.Impl
   defdelegate all_elections(id), to: __MODULE__.Impl
   defdelegate create_election(name, candidates), to: __MODULE__.Impl
   defdelegate get_election(id), to: __MODULE__.Impl
