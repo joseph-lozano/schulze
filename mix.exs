@@ -36,6 +36,7 @@ defmodule Votex.MixProject do
       # Phoenix Deps
       {:phoenix, "~> 1.5.5"},
       {:phoenix_live_view, "~> 0.14.7"},
+      {:phoenix_ecto, "~> 4.2"},
       {:floki, ">= 0.27.0", only: :test},
       {:phoenix_html, "~> 2.11"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
@@ -52,6 +53,8 @@ defmodule Votex.MixProject do
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
 
       # App Deps
+      {:phx_gen_auth, "~> 0.5", only: [:dev], runtime: false},
+      {:bcrypt_elixir, "~> 2.0"},
       {:typed_struct, "~> 0.2.1"},
       {:accessible, "~> 0.2.1"},
       {:libgraph, "~> 0.13.3"}
