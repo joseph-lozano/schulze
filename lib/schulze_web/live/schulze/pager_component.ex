@@ -1,4 +1,5 @@
 defmodule PagerComponent do
+  @moduledoc false
   use Phoenix.LiveComponent
   import Phoenix.HTML.Link
   import Phoenix.HTML.Form, only: [form_for: 3, select: 4]
@@ -14,14 +15,16 @@ defmodule PagerComponent do
           <%= link page, to: "#", class: "mr-2", phx_click: "get_page", phx_value_page: page %>
         </div>
       <% end %>
-      <div class="col-2 offset-2">
-        <label class="form-label">Page Size:</label>
-      </div>
-      <div class="col-2">
-        <%= f = form_for :pager, "#", phx_change: "get_page" %>
-          <%= select f, :page_size, [5, 10, 20, 50], value: @page_size, class: "form-control" %>
-        </form>
-      </div>
+      <%= if @page_size do %>
+        <div class="col-2 offset-2">
+          <label class="form-label">Page Size:</label>
+        </div>
+        <div class="col-2">
+          <%= f = form_for :pager, "#", phx_change: "get_page" %>
+            <%= select f, :page_size, [5, 10, 20, 50], value: @page_size, class: "form-control" %>
+          </form>
+        </div>
+      <% end %>
     </div>
     """
   end

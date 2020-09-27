@@ -24,6 +24,5 @@ defmodule Schulze do
   defdelegate get_election(id), to: __MODULE__.Impl
   defdelegate delete_election(id), to: __MODULE__.Impl
   defdelegate cast_vote(election, vote), to: __MODULE__.Impl
-  @spec get_winner(Schulze.Election.t()) :: any
   defdelegate get_winner(election), to: __MODULE__.Impl
 end

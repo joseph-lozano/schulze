@@ -83,7 +83,6 @@ defmodule SchulzeWeb.SchulzeLive.Index do
     user_id = socket.assigns.user_id
     {elections, meta} = Schulze.all_elections(user_id, params)
     elections = Enum.map(elections, &{&1.id, &1})
-    IO.inspect({params, meta})
     {:noreply, assign(socket, elections: elections, params: params, meta: meta)}
   end
 

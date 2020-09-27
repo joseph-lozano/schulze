@@ -102,15 +102,43 @@ setup_election = fn num ->
   election = apply_votes.(election, votes)
 end
 
-Enum.each(1..6, fn _ ->
-  setup_election.(1)
-  setup_election.(2)
-  setup_election.(3)
-  setup_election.(4)
-end)
+rand_vote = fn num_candidates -> :rand.uniform(num_candidates) end
+candidates = ~w(Alice Bob Charlie Doug Ellie)
 
-# {:ok, election_1} = Schulze.create_election("Example Election 1", ~w(A B C D E))
+possible_votes =
+  for _ <- candidates,
+      _ <- candidates,
+      _ <- candidates,
+      _ <- candidates,
+      _ <- candidates do
+    votes = Enum.map(1..5, fn _ -> rand_vote.(5) end)
 
+    Enum.zip(candidates, votes)
+    |> Enum.into(%{})
+  end
+
+IO.puts("A")
+
+rand_votes = fn times ->
+  for _ <- 1..times do
+    Enum.random(possible_votes)
+  end
+end
+
+IO.puts("B")
+num_votes = 1_000
+{:ok, rand_election} = Schulze.create_election("Random Election", candidates)
+
+IO.puts("C")
+
+{time, _} =
+  :timer.tc(fn ->
+    apply_votes.(rand_election, rand_votes.(num_votes))
+  end)
+
+IO.puts("#{num_votes} took #{div(time, 1000)}ms")
+
+# {:ok, election_1} = Schulze.create_election("Example Election 1", candidates)
 # {:ok, winner_1} =
 #   election_1
 #   |> apply_votes.(get_votes.(votes_1))

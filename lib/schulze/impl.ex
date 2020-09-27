@@ -10,14 +10,6 @@ defmodule Schulze.Impl do
     end
   end
 
-  def update_election(election) do
-    with {:ok, election} <- StoredElection.update(election),
-         topic <- "election_updates:#{election.id}",
-         :ok <- Schulze.broadcast(topic, "election_updated", %{id: election.id}) do
-      {:ok, election}
-    end
-  end
-
   def delete_election(id) when is_binary(id) do
     id
     |> String.to_integer()
@@ -50,16 +42,18 @@ defmodule Schulze.Impl do
 
   @spec cast_vote(Election.t(), Election.vote()) ::
           {:ok, Election.t()} | {:error, reason :: term()}
+  def cast_vote(%Election{winners: winners}, _) when not is_nil(winners) do
+    {:error, "This Election has concluded"}
+  end
+
   def cast_vote(election, vote) do
     missing_votes =
       (election.candidates -- Map.keys(vote))
       |> Enum.map(&{&1, 0})
       |> Enum.into(%{})
 
-    with :ok <- validate(election, vote),
-         election <- Election.add_vote(election, Map.merge(vote, missing_votes)),
-         {:ok, election} <- update_election(election) do
-      {:ok, election}
+    with :ok <- validate(election, vote) do
+      StoredElection.cast_vote(election, Map.merge(vote, missing_votes))
     end
   end
 
@@ -88,6 +82,9 @@ defmodule Schulze.Impl do
     |> get_pairwise_winners()
     |> Enum.map(fn {{c1, _}, _} -> c1 end)
     |> Enum.frequencies()
+    |> Enum.group_by(fn {_, strength} -> strength end, fn {candidate, _} -> candidate end)
+    |> Enum.sort_by(fn {score, _} -> score end, &(&1 >= &2))
+    |> Enum.map(&elem(&1, 1))
   end
 
   defp sorted_pair({{c1, c2}, _}) do
@@ -157,20 +154,8 @@ defmodule Schulze.Impl do
     end
   end
 
-  def get_winner(%Election{} = election), do: get_results(election) |> get_winner(election)
-
-  def get_winner(results, election) when is_map(results) do
-    winners =
-      (election.candidates -- Map.keys(results))
-      |> Enum.reduce(results, fn missing, acc -> Map.put(acc, missing, 0) end)
-      |> Enum.group_by(fn {_candidate, strength} -> strength end, fn {candidate, _strength} ->
-        candidate
-      end)
-      |> Enum.sort_by(fn {score, _} -> score end, &(&1 >= &2))
-      |> Enum.map(&elem(&1, 1))
-
-    put_in(election.winners, winners)
-    |> update_election()
+  def get_winner(%Election{} = election) do
+    StoredElection.get_winner(election, &get_results/1)
   end
 
   defp validate(election, vote) do

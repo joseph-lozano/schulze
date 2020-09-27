@@ -2,6 +2,7 @@ defmodule Schulze.StoredElection do
   @moduledoc "Wrapper for storing Elections"
   use Ecto.Schema
   alias Schulze.Repo
+  alias Ecto.Multi
   require Ecto.Query
 
   schema "elections" do
@@ -10,8 +11,6 @@ defmodule Schulze.StoredElection do
     field(:is_common, :boolean)
     belongs_to(:user, Schulze.Accounts.User)
   end
-
-  def all(user_id, page \\ 1)
 
   def all(nil, page) do
     __MODULE__
@@ -35,12 +34,31 @@ defmodule Schulze.StoredElection do
      [page_number: page_number, total_pages: total_pages, page_size: page_size]}
   end
 
-  def update(term) do
+  defp update(term) do
     changeset(%__MODULE__{id: term.id}, %{content: term, winners: term.winners})
     |> Repo.update()
     |> case do
-      {:ok, %__MODULE__{content: content}} -> {:ok, content}
+      {:ok, %__MODULE__{} = term} -> {:ok, term}
       e -> e
+    end
+  end
+
+  def cast_vote(term, vote) do
+    Multi.new()
+    |> Multi.run(:get, fn _, _ ->
+      case Repo.get(__MODULE__, term.id) do
+        nil -> {:error, "Not such election"}
+        e -> {:ok, e}
+      end
+    end)
+    |> Multi.run(:update, fn _, %{get: %__MODULE__{content: election}} ->
+      update_in(election.votes, &[vote | &1])
+      |> update()
+    end)
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{update: %__MODULE__{content: election}}} -> {:ok, election}
+      error -> error
     end
   end
 
@@ -67,6 +85,27 @@ defmodule Schulze.StoredElection do
     case Repo.get(__MODULE__, id) do
       %__MODULE__{content: content} -> content
       _ -> {:error, "Election Not Found"}
+    end
+  end
+
+  def get_winner(election, results_func) do
+    Multi.new()
+    |> Multi.run(:get, fn _, _ ->
+      case Repo.get(__MODULE__, election.id) do
+        %__MODULE__{content: content} -> {:ok, content}
+        _ -> {:error, "Election Not Found"}
+      end
+    end)
+    |> Multi.run(:update, fn _, %{get: election} ->
+      results = results_func.(election)
+
+      put_in(election.winners, results)
+      |> update()
+    end)
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{update: %__MODULE__{content: election}}} -> {:ok, election}
+      error -> error
     end
   end
 
