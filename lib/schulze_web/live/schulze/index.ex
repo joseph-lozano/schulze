@@ -12,7 +12,7 @@ defmodule SchulzeWeb.SchulzeLive.Index do
     {elections, meta} = Schulze.all_elections(user_id, params)
     elections = Enum.map(elections, &{&1.id, &1})
 
-    {:ok, assign(socket, elections: elections, meta: meta, user_id: user_id)}
+    {:ok, assign(socket, elections: elections, params: params, meta: meta, user_id: user_id)}
   end
 
   def handle_event("get_winner", %{"id" => id}, socket) do
@@ -54,9 +54,24 @@ defmodule SchulzeWeb.SchulzeLive.Index do
     end
   end
 
-  def handle_event("get_page", %{"page" => page}, socket) do
+  def handle_event("get_page", %{"pager" => params}, socket) do
+    params =
+      Map.merge(socket.assigns.params, params)
+      |> Map.to_list()
+
     socket
-    |> push_patch(to: Routes.live_path(socket, __MODULE__) <> "?page=#{page}")
+    |> push_patch(to: Routes.live_path(socket, __MODULE__, params))
+    |> noreply()
+  end
+
+  def handle_event("get_page", params, socket) do
+    params = Map.take(params, ["page", "page_size", "total_pages"])
+
+    Map.merge(socket.assigns.params, params)
+    |> Map.to_list()
+
+    socket
+    |> push_patch(to: Routes.live_path(socket, __MODULE__, params))
     |> noreply()
   end
 
@@ -68,7 +83,8 @@ defmodule SchulzeWeb.SchulzeLive.Index do
     user_id = socket.assigns.user_id
     {elections, meta} = Schulze.all_elections(user_id, params)
     elections = Enum.map(elections, &{&1.id, &1})
-    {:noreply, assign(socket, elections: elections, meta: meta)}
+    IO.inspect({params, meta})
+    {:noreply, assign(socket, elections: elections, params: params, meta: meta)}
   end
 
   def handle_info(%{event: "new_election", payload: %{id: id}}, socket) do

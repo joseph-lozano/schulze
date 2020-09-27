@@ -28,10 +28,11 @@ defmodule Schulze.StoredElection do
   end
 
   def paginate(query, params) do
-    %{entries: entries, page_number: page_number, total_pages: total_pages} =
+    %{entries: entries, page_number: page_number, total_pages: total_pages, page_size: page_size} =
       Repo.paginate(query, params)
 
-    {Enum.map(entries, & &1.content), %{page_number: page_number, total_pages: total_pages}}
+    {Enum.map(entries, & &1.content),
+     [page_number: page_number, total_pages: total_pages, page_size: page_size]}
   end
 
   def update(term) do
