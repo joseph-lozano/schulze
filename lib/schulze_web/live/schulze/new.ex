@@ -46,7 +46,10 @@ defmodule SchulzeWeb.SchulzeLive.New do
         {last_i, _} -> last_i
       end
 
-    remove_empty ++ [{last_i + 1, ""}]
+    case remove_empty do
+      [] -> [{last_i + 1, ""}, {last_i + 2, ""}]
+      l -> l ++ [{last_i + 1, ""}]
+    end
   end
 
   defp get_candidates(params) do
@@ -54,7 +57,6 @@ defmodule SchulzeWeb.SchulzeLive.New do
     |> Enum.map(fn {key, val} ->
       {String.slice(key, 10..-1) |> String.to_integer(), val}
     end)
-    |> IO.inspect(label: "candidates")
     |> Enum.sort_by(&elem(&1, 0))
     |> Enum.reject(fn {_, name} -> name == "" end)
   end

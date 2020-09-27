@@ -2,37 +2,35 @@
 <h1>Schulze</h1>
 
 
-<table class="table">
 <%= for {id, election} <- @elections do %>
-<tr>
-  <td>
+<div class="row">
+  <div class="col">
     <%= id %>
-  </td>
-  <td>
+  </div>
+  <div class="col">
     <%= election.name %>
-  </td>
-  <td>
+  </div>
+  <div class="col">
     <%= if election.winners do %>
       <%= link "Details", to: Routes.live_path(@socket, SchulzeWeb.SchulzeLive.Show, id) %>
     <% else %>
       <%= link "Votes: #{length(election.votes)}", to: Routes.live_path(@socket, SchulzeWeb.SchulzeLive.Show, id) %>
     <% end %>
-  </td>
-  <td>
-  </td>
-  <td>
+  </div>
+  <div class="col">
+  </div>
+  <div class="col">
     <%= if election.winners do %>
       1st Place: <strong><%= election.winners|> List.first() |> Enum.join(" and ") %></strong>
     <% else %>
       <%= link "Get Winner", to: "#", phx_click: :get_winner, phx_value_id: id, data_confirm: "This will close the election.\nAre you sure?" %>
     <% end %>
-  </td>
-  <td>
+  </div>
+  <div class="col">
     <%= link "Delete", to: "#", phx_click: :delete, phx_value_id: id, data_confirm: "Are you sure?" %>
-  </td>
-</tr>
+  </div>
+</div>
 <% end %>
-</table>
 
 <%= link "New Election", to: Routes.live_path(@socket, SchulzeWeb.SchulzeLive.New) %>
 
