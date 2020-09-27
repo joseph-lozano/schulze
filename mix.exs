@@ -7,7 +7,7 @@ defmodule Schulze.MixProject do
       version: "0.1.0",
       elixir: "~> 1.10",
       elixirc_paths: elixirc_paths(Mix.env()),
-      elixirc_options: [warnings_as_errors: true],
+      elixirc_options: elixirc_options(Mix.env()),
       compilers: [:phoenix] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
@@ -24,6 +24,10 @@ defmodule Schulze.MixProject do
       extra_applications: [:logger, :runtime_tools]
     ]
   end
+
+  defp elixirc_options(:dev), do: [all_warnings: true]
+  defp elixirc_options(:all), do: [warnings_as_errors: true]
+  defp elixirc_options(_), do: [all_warnings: true] ++ elixirc_options(:all)
 
   # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support"]

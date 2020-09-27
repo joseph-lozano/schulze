@@ -2,9 +2,9 @@ defmodule Schulze.Impl do
   @moduledoc "Module for running Schulze method elections"
   alias Schulze.{Election, Storage}
 
-  def create_election(name, candidates) do
+  def create_election(name, candidates, user_id) do
     with {:ok, election} <- new_election(name, candidates),
-         :ok <- Storage.create(election) do
+         :ok <- Storage.create(election, user_id) do
       SchulzeWeb.Endpoint.broadcast!(name, "new_election", %{election: election})
       {:ok, election}
     end

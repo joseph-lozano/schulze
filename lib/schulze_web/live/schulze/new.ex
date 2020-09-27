@@ -3,15 +3,19 @@ defmodule SchulzeWeb.SchulzeLive.New do
 
   use SchulzeWeb, :live_view
 
-  def mount(_params, _session, socket) do
-    {:ok, assign(socket, candidates: [{1, ""}], name: "")}
+  def mount(_params, session, socket) do
+    user_token = Map.get(session, "user_token")
+    user = user_token && Schulze.Accounts.get_user_by_session_token(user_token)
+    user_id = user && user.id
+    {:ok, assign(socket, candidates: [{1, ""}], name: "", user_id: user_id)}
   end
 
   def handle_event("submit", %{"schulze_election" => params}, socket) do
     %{"name" => name} = params
+    user_id = socket.assigns.user_id
     candidates = get_candidates(params) |> Enum.map(&elem(&1, 1))
 
-    case Schulze.create_election(name, candidates) do
+    case Schulze.create_election(name, candidates, user_id) do
       {:error, reason} ->
         socket |> put_flash(:error, reason) |> noreply()
 

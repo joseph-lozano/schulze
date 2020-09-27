@@ -7,12 +7,21 @@ defmodule Schulze.Storage do
   schema "elections" do
     field(:content, Schulze.Term)
     field(:winners, {:array, {:array, :string}})
+    belongs_to(:user, Schulze.Accounts.User)
   end
 
-  def all(id) do
+  def all(nil) do
     __MODULE__
     |> Ecto.Query.order_by(asc: :id)
-    |> Ecto.Query.where(user_id: ^id)
+    |> Ecto.Query.where([s], is_nil(s.user_id))
+    |> Repo.all()
+    |> Enum.map(& &1.content)
+  end
+
+  def all(user_id) do
+    __MODULE__
+    |> Ecto.Query.order_by(asc: :id)
+    |> Ecto.Query.where(user_id: ^user_id)
     |> Repo.all()
     |> Enum.map(& &1.content)
   end
@@ -26,11 +35,11 @@ defmodule Schulze.Storage do
     end
   end
 
-  def create(term) do
+  def create(term, user_id) do
     Ecto.Multi.new()
     |> Ecto.Multi.insert(
       :first_insert,
-      changeset(%__MODULE__{}, %{content: term})
+      changeset(%__MODULE__{}, %{content: term, user_id: user_id})
     )
     |> Ecto.Multi.run(:get_id, fn _repo, %{first_insert: %{id: id, content: content} = storage} ->
       Repo.update(changeset(storage, %{content: put_in(content.id, id)}))
@@ -57,6 +66,6 @@ defmodule Schulze.Storage do
   end
 
   def changeset(term, attrs) do
-    Ecto.Changeset.cast(term, attrs, [:content, :winners])
+    Ecto.Changeset.cast(term, attrs, [:content, :winners, :user_id])
   end
 end

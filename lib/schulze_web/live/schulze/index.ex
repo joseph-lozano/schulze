@@ -5,9 +5,10 @@ defmodule SchulzeWeb.SchulzeLive.Index do
   def mount(_params, session, socket) do
     user_token = Map.get(session, "user_token")
     user = user_token && Schulze.Accounts.get_user_by_session_token(user_token)
+    user_id = user && user.id
 
     elections =
-      Schulze.all_elections(user[:id])
+      Schulze.all_elections(user_id)
       |> Enum.map(&{&1.id, &1})
 
     {:ok, assign(socket, elections: elections)}

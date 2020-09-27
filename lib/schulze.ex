@@ -13,7 +13,8 @@ defmodule Schulze do
 
   defdelegate all_elections(), to: __MODULE__.Impl
   defdelegate all_elections(id), to: __MODULE__.Impl
-  defdelegate create_election(name, candidates), to: __MODULE__.Impl
+  def create_election(name, candidates), do: create_election(name, candidates, nil)
+  defdelegate create_election(name, candidates, user_id), to: __MODULE__.Impl
   defdelegate get_election(id), to: __MODULE__.Impl
   defdelegate delete_election(id), to: __MODULE__.Impl
   defdelegate cast_vote(election, vote), to: __MODULE__.Impl
