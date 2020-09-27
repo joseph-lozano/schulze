@@ -12,7 +12,9 @@
     <%= election.name %>
   </td>
   <td>
-    <%= unless election.winners do %>
+    <%= if election.winners do %>
+      <%= link "Details", to: Routes.live_path(@socket, SchulzeWeb.SchulzeLive.Show, id) %>
+    <% else %>
       <%= link "Votes: #{length(election.votes)}", to: Routes.live_path(@socket, SchulzeWeb.SchulzeLive.Show, id) %>
     <% end %>
   </td>

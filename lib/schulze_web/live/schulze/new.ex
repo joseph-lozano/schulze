@@ -7,13 +7,13 @@ defmodule SchulzeWeb.SchulzeLive.New do
     user_token = Map.get(session, "user_token")
     user = user_token && Schulze.Accounts.get_user_by_session_token(user_token)
     user_id = user && user.id
-    {:ok, assign(socket, candidates: [{1, ""}], name: "", user_id: user_id)}
+    {:ok, assign(socket, candidates: [{1, ""}, {2, ""}], name: "", user_id: user_id)}
   end
 
   def handle_event("submit", %{"schulze_election" => params}, socket) do
     %{"name" => name} = params
     user_id = socket.assigns.user_id
-    candidates = get_candidates(params) |> Enum.map(&elem(&1, 1))
+    candidates = get_candidates(params) |> Enum.map(&elem(&1, 1)) |> Enum.map(&String.trim/1)
 
     case Schulze.create_election(name, candidates, user_id) do
       {:error, reason} ->
@@ -32,12 +32,12 @@ defmodule SchulzeWeb.SchulzeLive.New do
 
     candidates =
       get_candidates(params)
-      |> maybe_add_extra()
+      |> add_extra()
 
     {:noreply, assign(socket, candidates: candidates, name: name)}
   end
 
-  defp maybe_add_extra(candidates) do
+  defp add_extra(candidates) do
     remove_empty = Enum.reject(candidates, fn {_, name} -> name == "" end)
 
     last_i =
@@ -51,7 +51,11 @@ defmodule SchulzeWeb.SchulzeLive.New do
 
   defp get_candidates(params) do
     Enum.filter(params, fn {key, _} -> String.starts_with?(key, "candidate_") end)
-    |> Enum.map(fn {key, val} -> {String.slice(key, 10..-1) |> String.to_integer(), val} end)
+    |> Enum.map(fn {key, val} ->
+      {String.slice(key, 10..-1) |> String.to_integer(), val}
+    end)
+    |> IO.inspect(label: "candidates")
+    |> Enum.sort_by(&elem(&1, 0))
     |> Enum.reject(fn {_, name} -> name == "" end)
   end
 

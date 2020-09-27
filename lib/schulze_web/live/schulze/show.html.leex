@@ -1,14 +1,8 @@
-<h1><%= @id %></h1>
-
-<p>Current Votes: <span><%= length(@election.votes) %></span><p>
-
-<%= f = form_for :ballot, "#", [phx_submit: :submit] %>
-<% candidate_count = length(@election.candidates) %>
-<%= for candidate <- @election.candidates |> Enum.shuffle() do %>
-
-  <%= label candidate, candidate %>
-  <%= select f, candidate, (0..candidate_count) %>
+<div class="container">
+<h2><%= @election.name %></h2>
+<%= if @election.winners do %>
+  <%= render SchulzeWeb.SchulzeView, "_winners.html", election: @election %>
+<% else %>
+  <%= render SchulzeWeb.SchulzeView, "_ballot.html", election: @election %>
 <% end %>
-<br/>
-<%= submit "Vote" %>
-</form>
+<div>

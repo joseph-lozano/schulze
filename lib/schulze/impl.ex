@@ -42,6 +42,7 @@ defmodule Schulze.Impl do
       Enum.uniq(candidates) != candidates -> {:error, "Candidates must be unique"}
       length(candidates) < 2 -> {:error, "Need at least 2 candidates"}
       String.contains?(name, ":") -> {:error, "Invalid Character in Election name."}
+      String.length(name) < 3 -> {:error, "Election Name not long enough"}
       true -> {:ok, %Election{name: name, candidates: candidates}}
     end
   end
