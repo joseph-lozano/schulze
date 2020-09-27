@@ -1,4 +1,4 @@
-defmodule Schulze.Storage do
+defmodule Schulze.StoredElection do
   @moduledoc "Wrapper for storing Elections"
   use Ecto.Schema
   alias Schulze.Repo
@@ -41,8 +41,9 @@ defmodule Schulze.Storage do
       :first_insert,
       changeset(%__MODULE__{}, %{content: term, user_id: user_id})
     )
-    |> Ecto.Multi.run(:get_id, fn _repo, %{first_insert: %{id: id, content: content} = storage} ->
-      Repo.update(changeset(storage, %{content: put_in(content.id, id)}))
+    |> Ecto.Multi.run(:get_id, fn _repo,
+                                  %{first_insert: %{id: id, content: content} = stored_election} ->
+      Repo.update(changeset(stored_election, %{content: put_in(content.id, id)}))
     end)
     |> Repo.transaction()
     |> case do

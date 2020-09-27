@@ -1,4 +1,4 @@
-defmodule Schulze.Repo.Migrations.Electio do
+defmodule Schulze.Repo.Migrations.StoredElection do
   use Ecto.Migration
 
   def change do

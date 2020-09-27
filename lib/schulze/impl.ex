@@ -1,10 +1,10 @@
 defmodule Schulze.Impl do
   @moduledoc "Module for running Schulze method elections"
-  alias Schulze.{Election, Storage}
+  alias Schulze.{Election, StoredElection}
 
   def create_election(name, candidates, user_id) do
     with {:ok, election} <- new_election(name, candidates),
-         :ok <- Storage.create(election, user_id) do
+         :ok <- StoredElection.create(election, user_id) do
       SchulzeWeb.Endpoint.broadcast!(name, "new_election", %{election: election})
       {:ok, election}
     end
@@ -14,7 +14,7 @@ defmodule Schulze.Impl do
 
   def update_election(name, election) do
     SchulzeWeb.Endpoint.broadcast!(name, "election_updated", %{})
-    Storage.update(election)
+    StoredElection.update(election)
   end
 
   def delete_election(id) when is_binary(id) do
@@ -24,15 +24,15 @@ defmodule Schulze.Impl do
   end
 
   def delete_election(id) when is_integer(id) do
-    Storage.delete(id)
+    StoredElection.delete(id)
   end
 
   def all_elections(id \\ nil) do
-    Storage.all(id)
+    StoredElection.all(id)
   end
 
   def get_election(id) do
-    Storage.get(id)
+    StoredElection.get(id)
   end
 
   @spec new_election(String.t(), Election.candidate_list()) ::
