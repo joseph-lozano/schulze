@@ -26,7 +26,8 @@ config :schulze, Schulze.Repo,
   username: "postgres",
   password: "postgres",
   hostname: "localhost",
-  port: "5432"
+  port: "5432",
+  pool_size: 50
 
 # ## SSL Support
 #

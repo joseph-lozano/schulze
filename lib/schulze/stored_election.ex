@@ -44,21 +44,34 @@ defmodule Schulze.StoredElection do
   end
 
   def cast_vote(term, vote) do
-    Multi.new()
-    |> Multi.run(:get, fn _, _ ->
-      case Repo.get(__MODULE__, term.id) do
-        nil -> {:error, "Not such election"}
-        e -> {:ok, e}
+    try do
+      Multi.new()
+      |> Multi.run(:get, fn _, _ ->
+        Repo.query!("set transaction isolation level repeatable read;")
+
+        case Repo.get(__MODULE__, term.id) do
+          nil -> {:error, "Not such election"}
+          e -> {:ok, e}
+        end
+      end)
+      |> Multi.run(:update, fn _, %{get: %__MODULE__{content: election}} ->
+        update_in(election.votes, &[vote | &1])
+        |> update()
+      end)
+      |> Repo.transaction()
+      |> case do
+        {:ok, %{update: %__MODULE__{content: election}}} ->
+          {:ok, election}
+
+        error ->
+          error
       end
-    end)
-    |> Multi.run(:update, fn _, %{get: %__MODULE__{content: election}} ->
-      update_in(election.votes, &[vote | &1])
-      |> update()
-    end)
-    |> Repo.transaction()
-    |> case do
-      {:ok, %{update: %__MODULE__{content: election}}} -> {:ok, election}
-      error -> error
+    rescue
+      e in Postgrex.Error ->
+        case e do
+          %Postgrex.Error{postgres: %{code: :serialization_failure}} -> cast_vote(term, vote)
+          e -> reraise(inspect(e), e.__STACKTRACE__)
+        end
     end
   end
 

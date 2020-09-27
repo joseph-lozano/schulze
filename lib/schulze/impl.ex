@@ -17,7 +17,9 @@ defmodule Schulze.Impl do
   end
 
   def delete_election(id) when is_integer(id) do
-    StoredElection.delete(id)
+    with :ok <- StoredElection.delete(id) do
+      Schulze.broadcast("election_updates", "election_deleted", %{id: id})
+    end
   end
 
   def all_elections(id \\ nil, page) do
@@ -42,18 +44,16 @@ defmodule Schulze.Impl do
 
   @spec cast_vote(Election.t(), Election.vote()) ::
           {:ok, Election.t()} | {:error, reason :: term()}
-  def cast_vote(%Election{winners: winners}, _) when not is_nil(winners) do
-    {:error, "This Election has concluded"}
-  end
-
   def cast_vote(election, vote) do
     missing_votes =
       (election.candidates -- Map.keys(vote))
       |> Enum.map(&{&1, 0})
       |> Enum.into(%{})
 
-    with :ok <- validate(election, vote) do
-      StoredElection.cast_vote(election, Map.merge(vote, missing_votes))
+    with :ok <- validate(election, vote),
+         {:ok, election} <- StoredElection.cast_vote(election, Map.merge(vote, missing_votes)) do
+      Schulze.broadcast("election_updates", "election_updated", %{id: election.id})
+      {:ok, election}
     end
   end
 
@@ -155,7 +155,10 @@ defmodule Schulze.Impl do
   end
 
   def get_winner(%Election{} = election) do
-    StoredElection.get_winner(election, &get_results/1)
+    with {:ok, election} <- StoredElection.get_winner(election, &get_results/1) do
+      Schulze.broadcast("election_updates", "election_updated", %{id: election.id})
+      {:ok, election}
+    end
   end
 
   defp validate(election, vote) do

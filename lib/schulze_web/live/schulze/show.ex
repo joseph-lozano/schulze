@@ -3,7 +3,8 @@ defmodule SchulzeWeb.SchulzeLive.Show do
   use SchulzeWeb, :live_view
 
   def mount(%{"id" => id}, _session, socket) do
-    Schulze.subscribe("election_updates:#{id}")
+    Schulze.subscribe("election_updates")
+    id = String.to_integer(id)
 
     case Schulze.get_election(id) do
       {:error, reason} ->
@@ -36,11 +37,14 @@ defmodule SchulzeWeb.SchulzeLive.Show do
   end
 
   def handle_info(%{event: _, payload: %{id: id}}, socket) do
-    case Schulze.get_election(id) do
-      %Schulze.Election{} = election ->
-        {:noreply, assign(socket, election: election)}
+    IO.inspect({id, socket.assigns.id}, label: "---------- ->")
 
-      _ ->
+    with true <- id == socket.assigns.id,
+         election <- Schulze.get_election(id) do
+      {:noreply, assign(socket, election: election)}
+    else
+      x ->
+        IO.inspect(x, label: ">>>>>>>>>>>>>>>")
         {:noreply, socket}
     end
   end

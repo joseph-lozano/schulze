@@ -81,11 +81,14 @@ decompress = fn votes ->
 end
 
 apply_votes = fn election, votes ->
-  Enum.reduce(votes, election, fn vote, acc ->
-    with {:ok, e} <- Schulze.cast_vote(acc, vote) do
-      e
-    end
+  Enum.map(votes, fn vote ->
+    Task.async(fn ->
+      {:ok, e} = Schulze.cast_vote(election, vote)
+      length(e.votes)
+    end)
   end)
+  |> Enum.map(&Task.await(&1))
+  |> Enum.each(&IO.puts(&1))
 end
 
 setup_election = fn num ->
@@ -117,19 +120,14 @@ possible_votes =
     |> Enum.into(%{})
   end
 
-IO.puts("A")
-
 rand_votes = fn times ->
   for _ <- 1..times do
     Enum.random(possible_votes)
   end
 end
 
-IO.puts("B")
-num_votes = 1_000
+num_votes = 100
 {:ok, rand_election} = Schulze.create_election("Random Election", candidates)
-
-IO.puts("C")
 
 {time, _} =
   :timer.tc(fn ->

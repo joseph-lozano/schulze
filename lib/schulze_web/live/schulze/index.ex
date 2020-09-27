@@ -8,6 +8,7 @@ defmodule SchulzeWeb.SchulzeLive.Index do
     user_id = user && user.id
 
     Schulze.subscribe(Schulze.topic(user_id))
+    Schulze.subscribe("election_updates")
 
     {elections, meta} = Schulze.all_elections(user_id, params)
     elections = Enum.map(elections, &{&1.id, &1})
@@ -43,7 +44,11 @@ defmodule SchulzeWeb.SchulzeLive.Index do
     case Schulze.delete_election(id) do
       :ok ->
         elections = socket.assigns.elections
-        index = Enum.find_index(elections, fn {election_id, _} -> election_id == id end)
+
+        index =
+          Enum.find_index(elections, fn {election_id, _} ->
+            election_id == String.to_integer(id)
+          end)
 
         elections = List.delete_at(elections, index)
 
@@ -97,6 +102,29 @@ defmodule SchulzeWeb.SchulzeLive.Index do
 
       _ ->
         noreply(socket)
+    end
+  end
+
+  def handle_info(%{event: "election_updated", payload: %{id: event_id}}, socket) do
+    with elections <- socket.assigns.elections,
+         %Schulze.Election{} = got_election <- Schulze.get_election(event_id),
+         index when not is_nil(index) <-
+           Enum.find_index(elections, fn {id, _} -> id == event_id end) do
+      elections = List.replace_at(elections, index, {got_election.id, got_election})
+      {:noreply, assign(socket, elections: elections)}
+    else
+      _ -> {:noreply, socket}
+    end
+  end
+
+  def handle_info(%{event: "election_deleted", payload: %{id: event_id}}, socket) do
+    with elections <- socket.assigns.elections,
+         index when not is_nil(index) <-
+           Enum.find_index(elections, fn {id, _} -> id == event_id end) do
+      elections = List.delete_at(elections, index)
+      {:noreply, assign(socket, elections: elections)}
+    else
+      _ -> {:noreply, socket}
     end
   end
 
