@@ -1,13 +1,23 @@
 <div class="container">
   <h1>New Schulze Election</h1>
 
-  <%= f = form_for :schulze_election, "#", [phx_change: :validate, phx_submit: :submit] %>
-  <%= label f, :name, class: "form-label" %>
-  <%= text_input f, :name, value: @name, class: "form-control" %>
+  <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :submit] %>
+  <%= label f, :name, class: "form-label" do %>
+      Name
+      <%= error_tag f, :name %>
+  <% end %>
+  <%= text_input f, :name, class: "form-control" %>
   <br/>
   <%= label f, :candidates, class: "form-label" %>
-  <%= for {i, candidate} <- @candidates do %>
-      <%= text_input f, "candidate_#{i}", value: candidate, class: "form-control mb-3"  %>
+      <% error = Enum.find(f.errors, fn {field, {_error, extra}} -> field == :candidates and extra == [] end)  %>
+      <%= error_tag(f, :candidates) %>
+  <%= for {candidate, i} <- Enum.with_index(@candidates, 1) do %>
+      <% error = Enum.find(f.errors, fn {field, {_error, extra}} -> field == :candidates and extra == [at_index: i] end)  %>
+      <% inspect error %>
+      <!-- `if` is important so we don't create atoms willy-nilly -->
+      <%= if i <= 100 do %>
+        <%= text_input f, :"candidate_#{i}", value: candidate, class: "form-control mb-3"  %>
+      <% end %>
   <% end %>
   <%= submit "Submit", class: "btn btn-primary mt-3" %>
 

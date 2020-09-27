@@ -126,15 +126,19 @@ rand_votes = fn times ->
   end
 end
 
-num_votes = 100
-{:ok, rand_election} = Schulze.create_election("Random Election", candidates)
+1..10
+|> Enum.each(fn _ ->
+  num_votes = 100
 
-{time, _} =
-  :timer.tc(fn ->
-    apply_votes.(rand_election, rand_votes.(num_votes))
-  end)
+  {:ok, rand_election} = Schulze.create_election("Random Election", candidates)
 
-IO.puts("#{num_votes} took #{div(time, 1000)}ms")
+  {time, _} =
+    :timer.tc(fn ->
+      apply_votes.(rand_election, rand_votes.(num_votes))
+    end)
+
+  IO.puts("#{num_votes} took #{div(time, 1000)}ms")
+end)
 
 # {:ok, election_1} = Schulze.create_election("Example Election 1", candidates)
 # {:ok, winner_1} =

@@ -171,7 +171,9 @@ defmodule SchulzeTest do
 
     test "fails if 2 candidates share a name" do
       candidates = ["Alice", "Alice", "Bob", "Charlie"]
-      assert {:error, "Candidates must be unique"} = Schulze.create_election("test", candidates)
+
+      assert {:error, changeset} = Schulze.create_election("test", candidates)
+      assert errors_on(changeset) == %{candidates: ["must be unique"]}
     end
   end
 
@@ -188,7 +190,7 @@ defmodule SchulzeTest do
 
       vote2 = %{"Alice" => 3, "Bob" => 1, "Charlie" => 1}
       {:ok, election2} = Schulze.cast_vote(election1, vote2)
-      assert election2.votes == [vote2, vote1]
+      assert election2.votes == [vote1, vote2]
     end
 
     test "reject votes with a negative number", %{election: election} do

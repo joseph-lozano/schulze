@@ -42,7 +42,7 @@ defmodule SchulzeWeb.SchulzeLive.Index do
 
   def handle_event("delete", %{"id" => id}, socket) do
     case Schulze.delete_election(id) do
-      :ok ->
+      {:ok, _election} ->
         elections = socket.assigns.elections
 
         index =

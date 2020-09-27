@@ -1,33 +1,102 @@
 defmodule Schulze.Impl do
   @moduledoc "Module for running Schulze method elections"
-  alias Schulze.{Election, StoredElection}
+  alias Schulze.{Election, Repo}
+  require Ecto.Query
+  alias Ecto.Multi
 
-  def create_election(name, candidates, user_id) do
-    with {:ok, election} <- new_election(name, candidates),
-         {:ok, election} <- StoredElection.create(election, user_id),
-         :ok <- Schulze.broadcast(Schulze.topic(user_id), "new_election", %{id: election.id}) do
+  # import Ecto.Changeset
+
+  def all_elections(nil, page) do
+    Election
+    |> Ecto.Query.order_by(asc: :id)
+    |> Ecto.Query.where(is_common: true)
+    |> paginate(page)
+  end
+
+  def all_elections(user_id, params) do
+    Election
+    |> Ecto.Query.order_by(asc: :id)
+    |> Ecto.Query.where(user_id: ^user_id)
+    |> paginate(params)
+  end
+
+  defp paginate(query, params) do
+    %{entries: entries, page_number: page_number, total_pages: total_pages, page_size: page_size} =
+      Repo.paginate(query, params)
+
+    {entries, [page_number: page_number, total_pages: total_pages, page_size: page_size]}
+  end
+
+  # defp update(election) do
+  #   changeset(election, %{ winners: term.winners})
+  #   |> Repo.update()
+  #   |> case do
+  #     {:ok, %Election{} = term} -> {:ok, term}
+  #     e -> e
+  #   end
+  # end
+
+  @spec cast_vote(Election.t(), Election.vote()) ::
+          {:ok, Election.t()} | {:error, reason :: term()}
+  def cast_vote(election, vote) do
+    # any candidates not in the vote will have their scores set to zero
+    vote =
+      (election.candidates -- Map.keys(vote))
+      |> Enum.map(&{&1, 0})
+      |> Enum.into(%{})
+      |> Map.merge(vote)
+
+    with :ok <- validate(election, vote),
+         {:ok, election} <- update_with_vote(election, vote) do
+      Schulze.broadcast("election_updates", "election_updated", %{id: election.id})
       {:ok, election}
     end
   end
 
-  def delete_election(id) when is_binary(id) do
-    id
-    |> String.to_integer()
-    |> delete_election()
-  end
-
-  def delete_election(id) when is_integer(id) do
-    with :ok <- StoredElection.delete(id) do
-      Schulze.broadcast("election_updates", "election_deleted", %{id: id})
+  defp update_with_vote(election, vote) do
+    Ecto.Query.from(e in Election, where: [id: ^election.id])
+    |> Ecto.Query.select([e], e)
+    |> Repo.update_all(push: [votes: vote])
+    |> case do
+      {1, [election]} -> {:ok, election}
+      _ -> raise "This shouldn't happen since ids are unique"
     end
   end
 
-  def all_elections(id \\ nil, page) do
-    StoredElection.all(id, page)
+  def create_election(name, candidates, user_id) do
+    Election.new(%Election{}, %{name: name, candidates: candidates, user_id: user_id})
+    |> Repo.insert()
   end
 
   def get_election(id) do
-    StoredElection.get(id)
+    Repo.get(Election, id)
+  end
+
+  def get_winner(%Election{id: id}) do
+    Multi.new()
+    |> Multi.run(:get, fn _, _ ->
+      election =
+        Ecto.Query.from(e in Election, where: e.id == ^id, lock: "FOR UPDATE")
+        |> Repo.one()
+
+      {:ok, election}
+    end)
+    |> Multi.run(:update, fn _, %{get: election} ->
+      Election.winner(election, get_results(election))
+      |> Repo.update()
+    end)
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{update: election}} -> {:ok, election}
+      error -> error
+    end
+  end
+
+  def delete_election(id) do
+    case Repo.get(Election, id) do
+      %Election{} = election -> Repo.delete(election)
+      _ -> {:error, "Could not delete"}
+    end
   end
 
   @spec new_election(String.t(), Election.candidate_list()) ::
@@ -39,21 +108,6 @@ defmodule Schulze.Impl do
       String.contains?(name, ":") -> {:error, "Invalid Character in Election name."}
       String.length(name) < 3 -> {:error, "Election Name not long enough"}
       true -> {:ok, %Election{name: name, candidates: candidates}}
-    end
-  end
-
-  @spec cast_vote(Election.t(), Election.vote()) ::
-          {:ok, Election.t()} | {:error, reason :: term()}
-  def cast_vote(election, vote) do
-    missing_votes =
-      (election.candidates -- Map.keys(vote))
-      |> Enum.map(&{&1, 0})
-      |> Enum.into(%{})
-
-    with :ok <- validate(election, vote),
-         {:ok, election} <- StoredElection.cast_vote(election, Map.merge(vote, missing_votes)) do
-      Schulze.broadcast("election_updates", "election_updated", %{id: election.id})
-      {:ok, election}
     end
   end
 
@@ -78,13 +132,18 @@ defmodule Schulze.Impl do
         {pair, get_strongest_path_weight(g, c1, c2)}
       end)
 
-    strongest_paths
-    |> get_pairwise_winners()
-    |> Enum.map(fn {{c1, _}, _} -> c1 end)
-    |> Enum.frequencies()
-    |> Enum.group_by(fn {_, strength} -> strength end, fn {candidate, _} -> candidate end)
-    |> Enum.sort_by(fn {score, _} -> score end, &(&1 >= &2))
-    |> Enum.map(&elem(&1, 1))
+    results =
+      strongest_paths
+      |> get_pairwise_winners()
+      |> Enum.map(fn {{c1, _}, _} -> c1 end)
+      |> Enum.frequencies()
+      |> Enum.group_by(fn {_, strength} -> strength end, fn {candidate, _} -> candidate end)
+      |> Enum.sort_by(fn {score, _} -> score end, &(&1 >= &2))
+      |> Enum.map(&elem(&1, 1))
+
+    missing_candidates = candidates -- List.flatten(results)
+
+    results ++ [missing_candidates]
   end
 
   defp sorted_pair({{c1, c2}, _}) do
@@ -151,13 +210,6 @@ defmodule Schulze.Impl do
         |> Enum.map(&get_path_strength(graph, &1))
         |> Enum.max_by(& &1.weight)
         |> Map.get(:weight)
-    end
-  end
-
-  def get_winner(%Election{} = election) do
-    with {:ok, election} <- StoredElection.get_winner(election, &get_results/1) do
-      Schulze.broadcast("election_updates", "election_updated", %{id: election.id})
-      {:ok, election}
     end
   end
 

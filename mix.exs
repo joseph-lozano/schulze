@@ -60,7 +60,7 @@ defmodule Schulze.MixProject do
       {:phx_gen_auth, "~> 0.5", only: [:dev], runtime: false},
       {:bcrypt_elixir, "~> 2.0"},
       {:bamboo, "~> 1.5"},
-      {:typed_struct, "~> 0.2.1"},
+      {:typed_ecto_schema, "~> 0.1.1"},
       {:accessible, "~> 0.2.1"}
     ]
   end

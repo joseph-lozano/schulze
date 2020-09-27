@@ -1,4 +1,5 @@
 defmodule SchulzeWeb.SchulzeLive.New do
+  alias Schulze.Election
   @moduledoc false
 
   use SchulzeWeb, :live_view
@@ -7,17 +8,25 @@ defmodule SchulzeWeb.SchulzeLive.New do
     user_token = Map.get(session, "user_token")
     user = user_token && Schulze.Accounts.get_user_by_session_token(user_token)
     user_id = user && user.id
-    {:ok, assign(socket, candidates: [{1, ""}, {2, ""}], name: "", user_id: user_id)}
+    changeset = Election.new(%Election{}, %{user_id: user_id})
+    candidates = add_extra([])
+
+    {:ok, assign(socket, changeset: changeset, user_id: user_id, candidates: candidates)}
   end
 
-  def handle_event("submit", %{"schulze_election" => params}, socket) do
+  def handle_event("submit", %{"election" => params}, socket) do
     %{"name" => name} = params
     user_id = socket.assigns.user_id
-    candidates = get_candidates(params) |> Enum.map(&elem(&1, 1)) |> Enum.map(&String.trim/1)
+    candidates = get_candidates(params)
 
     case Schulze.create_election(name, candidates, user_id) do
-      {:error, reason} ->
-        socket |> put_flash(:error, reason) |> noreply()
+      {:error, changeset} ->
+        IO.inspect(changeset)
+
+        socket
+        |> assign(changest: changeset)
+        |> put_flash(:error, "See Errors below")
+        |> noreply()
 
       {:ok, _} ->
         socket
@@ -27,28 +36,21 @@ defmodule SchulzeWeb.SchulzeLive.New do
     end
   end
 
-  def handle_event("validate", %{"schulze_election" => params}, socket) do
+  def handle_event("validate", %{"election" => params}, socket) do
     %{"name" => name} = params
+    user_id = socket.assigns.user_id
 
-    candidates =
-      get_candidates(params)
-      |> add_extra()
+    candidates = get_candidates(params)
 
-    {:noreply, assign(socket, candidates: candidates, name: name)}
+    cs = Election.new(%Election{}, %{name: name, candidates: candidates, user_id: user_id})
+
+    {:noreply, assign(socket, candidates: add_extra(candidates), name: name, changeset: cs)}
   end
 
   defp add_extra(candidates) do
-    remove_empty = Enum.reject(candidates, fn {_, name} -> name == "" end)
-
-    last_i =
-      case List.last(remove_empty) do
-        nil -> 0
-        {last_i, _} -> last_i
-      end
-
-    case remove_empty do
-      [] -> [{last_i + 1, ""}, {last_i + 2, ""}]
-      l -> l ++ [{last_i + 1, ""}]
+    case candidates do
+      [] -> ["", ""]
+      l -> l ++ [""]
     end
   end
 
@@ -58,7 +60,8 @@ defmodule SchulzeWeb.SchulzeLive.New do
       {String.slice(key, 10..-1) |> String.to_integer(), val}
     end)
     |> Enum.sort_by(&elem(&1, 0))
-    |> Enum.reject(fn {_, name} -> name == "" end)
+    |> Enum.map(fn {_, name} -> name end)
+    |> Enum.reject(fn name -> name == "" end)
   end
 
   defp noreply(socket), do: {:noreply, socket}

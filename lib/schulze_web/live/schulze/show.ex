@@ -37,14 +37,11 @@ defmodule SchulzeWeb.SchulzeLive.Show do
   end
 
   def handle_info(%{event: _, payload: %{id: id}}, socket) do
-    IO.inspect({id, socket.assigns.id}, label: "---------- ->")
-
     with true <- id == socket.assigns.id,
          election <- Schulze.get_election(id) do
       {:noreply, assign(socket, election: election)}
     else
-      x ->
-        IO.inspect(x, label: ">>>>>>>>>>>>>>>")
+      _ ->
         {:noreply, socket}
     end
   end

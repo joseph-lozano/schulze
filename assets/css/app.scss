@@ -18,8 +18,10 @@ body {
   flex-shrink: 0;
 }
 /* LiveView specific classes for your customizations */
-.phx-no-feedback.invalid-feedback,
 .phx-no-feedback .invalid-feedback {
+  display: none;
+}
+.phx-no-feedback {
   display: none;
 }
 
