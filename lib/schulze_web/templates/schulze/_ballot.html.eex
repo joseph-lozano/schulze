@@ -1,13 +1,13 @@
 
   <h4>Ballot</h4>
 
-  <p>Current Votes: <span><%= length(@election.votes) %></span><p>
+  <p>Current Votes: <span><%= @votes  %></span><p>
 
   <%= f = form_for :ballot, "#", [phx_submit: :submit] %>
-    <% candidate_count = length(@election.candidates) %>
+    <% candidate_count = length(@candidates) %>
     <div class="row">
 
-      <%= for candidate <- @election.candidates |> Enum.shuffle() do %>
+      <%= for candidate <- @candidates do %>
         <div class="col-auto mb-3">
           <label class="form-label"> <%= candidate %>
           </label>
@@ -15,5 +15,5 @@
         </div>
       <% end %>
     </div>
+    <%= submit "Vote", class: "btn btn-primary mt-3" %>
   </form>
-  <%= submit "Vote", class: "btn btn-primary mt-3" %>

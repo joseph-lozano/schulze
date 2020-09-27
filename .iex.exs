@@ -102,10 +102,12 @@ setup_election = fn num ->
   election = apply_votes.(election, votes)
 end
 
-setup_election.(1)
-setup_election.(2)
-setup_election.(3)
-setup_election.(4)
+Enum.each(1..20, fn _ ->
+  setup_election.(1)
+  setup_election.(2)
+  setup_election.(3)
+  setup_election.(4)
+end)
 
 # {:ok, election_1} = Schulze.create_election("Example Election 1", ~w(A B C D E))
 

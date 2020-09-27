@@ -7,6 +7,9 @@ defmodule SchulzeWeb.SchulzeLive.Index do
     user = user_token && Schulze.Accounts.get_user_by_session_token(user_token)
     user_id = user && user.id
 
+    Schulze.subscribe(Schulze.topic(user_id))
+    IO.inspect(Schulze.topic(user_id), label: "SUBSCRIBED")
+
     elections =
       Schulze.all_elections(user_id)
       |> Enum.map(&{&1.id, &1})
@@ -49,6 +52,21 @@ defmodule SchulzeWeb.SchulzeLive.Index do
 
       {:error, reason} ->
         put_flash(socket, :error, reason) |> noreply()
+    end
+  end
+
+  def handle_info(%{event: "new_election", payload: %{id: id}}, socket) do
+    case Schulze.get_election(id) do
+      %Schulze.Election{} = election ->
+        elections = [{id, election} | socket.assigns.elections] |> Enum.sort_by(&elem(&1, 0))
+        IO.inspect("AAAAAAAAAAAAA")
+
+        socket
+        |> assign(elections: elections)
+        |> noreply()
+
+      _ ->
+        noreply(socket)
     end
   end
 

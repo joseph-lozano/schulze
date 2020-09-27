@@ -3,7 +3,7 @@ defmodule SchulzeWeb.SchulzeLive.Show do
   use SchulzeWeb, :live_view
 
   def mount(%{"id" => id}, _session, socket) do
-    Schulze.subscribe("schulze:#{id}")
+    Schulze.subscribe("election_updates:#{id}")
 
     case Schulze.get_election(id) do
       {:error, reason} ->
@@ -13,7 +13,8 @@ defmodule SchulzeWeb.SchulzeLive.Show do
         |> ok()
 
       election ->
-        {:ok, assign(socket, id: id, election: election)}
+        candidates = Enum.shuffle(election.candidates)
+        {:ok, assign(socket, id: id, election: election, candidates: candidates)}
     end
   end
 
@@ -34,8 +35,14 @@ defmodule SchulzeWeb.SchulzeLive.Show do
     end
   end
 
-  def handle_info(%{event: "election_updated"}, socket) do
-    {:noreply, socket}
+  def handle_info(%{event: _, payload: %{id: id}}, socket) do
+    case Schulze.get_election(id) do
+      %Schulze.Election{} = election ->
+        {:noreply, assign(socket, election: election)}
+
+      _ ->
+        {:noreply, socket}
+    end
   end
 
   defp no_reply(socket), do: {:noreply, socket}

@@ -1,6 +1,6 @@
 <h4>Winners</h4>
 
-<%= for {winners, place} <- @election.winners|> Enum.with_index(1) do %>
+<%= for {winners, place} <- @winners|> Enum.with_index(1) do %>
   <div class="row">
     <p>
     <%= ordinalize(place) %> Place: <%= winners |> Enum.join(" and ") %>

@@ -1,8 +1,8 @@
 <div class="container">
 <h2><%= @election.name %></h2>
 <%= if @election.winners do %>
-  <%= render SchulzeWeb.SchulzeView, "_winners.html", election: @election %>
+  <%= render SchulzeWeb.SchulzeView, "_winners.html", winners: @election.winners %>
 <% else %>
-  <%= render SchulzeWeb.SchulzeView, "_ballot.html", election: @election %>
+  <%= render SchulzeWeb.SchulzeView, "_ballot.html", candidates: @candidates, votes: length(@election.votes) %>
 <% end %>
 <div>

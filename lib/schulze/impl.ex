@@ -4,17 +4,18 @@ defmodule Schulze.Impl do
 
   def create_election(name, candidates, user_id) do
     with {:ok, election} <- new_election(name, candidates),
-         :ok <- StoredElection.create(election, user_id) do
-      SchulzeWeb.Endpoint.broadcast!(name, "new_election", %{election: election})
+         {:ok, election} <- StoredElection.create(election, user_id),
+         :ok <- Schulze.broadcast(Schulze.topic(user_id), "new_election", %{id: election.id}) do
       {:ok, election}
     end
   end
 
-  def update_election(election), do: update_election(election.name, election)
-
-  def update_election(name, election) do
-    SchulzeWeb.Endpoint.broadcast!(name, "election_updated", %{})
-    StoredElection.update(election)
+  def update_election(election) do
+    with {:ok, election} <- StoredElection.update(election),
+         topic <- "election_updates:#{election.id}",
+         :ok <- Schulze.broadcast(topic, "election_updated", %{id: election.id}) do
+      {:ok, election}
+    end
   end
 
   def delete_election(id) when is_binary(id) do
@@ -55,9 +56,10 @@ defmodule Schulze.Impl do
       |> Enum.map(&{&1, 0})
       |> Enum.into(%{})
 
-    with :ok <- validate(election, vote) do
-      Election.add_vote(election, Map.merge(vote, missing_votes))
-      |> update_election()
+    with :ok <- validate(election, vote),
+         election <- Election.add_vote(election, Map.merge(vote, missing_votes)),
+         {:ok, election} <- update_election(election) do
+      {:ok, election}
     end
   end
 

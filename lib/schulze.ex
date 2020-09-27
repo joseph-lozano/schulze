@@ -11,6 +11,13 @@ defmodule Schulze do
     SchulzeWeb.Endpoint.subscribe(topic)
   end
 
+  def broadcast(topic, event, payload) do
+    SchulzeWeb.Endpoint.broadcast(topic, event, payload)
+  end
+
+  def topic(nil), do: "election:new:common"
+  def topic(user_id), do: "election:new#{user_id}"
+
   defdelegate all_elections(), to: __MODULE__.Impl
   defdelegate all_elections(id), to: __MODULE__.Impl
   def create_election(name, candidates), do: create_election(name, candidates, nil)

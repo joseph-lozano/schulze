@@ -2,14 +2,20 @@
 @import "~bootstrap/scss/bootstrap";
 @import "../node_modules/nprogress/nprogress.css";
 
+html, body {
+  height: 100%;
+}
+body {
+  display: flex;
+  flex-direction: column;
+}
+.content {
+  flex: 1 0 auto;
+}
+
+
 .footer {
-  position: fixed;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  background-color: white;
-  color: $primary;
-  text-align: center;
+  flex-shrink: 0;
 }
 /* LiveView specific classes for your customizations */
 .phx-no-feedback.invalid-feedback,
