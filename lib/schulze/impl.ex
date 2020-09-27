@@ -28,8 +28,8 @@ defmodule Schulze.Impl do
     StoredElection.delete(id)
   end
 
-  def all_elections(id \\ nil) do
-    StoredElection.all(id)
+  def all_elections(id \\ nil, page) do
+    StoredElection.all(id, page)
   end
 
   def get_election(id) do

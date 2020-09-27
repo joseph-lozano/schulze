@@ -53,12 +53,9 @@ defmodule Schulze.MixProject do
       {:plug_cowboy, "~> 2.0"},
       {:postgrex, "~> 0.15.6"},
       {:ecto_sql, "~> 3.4"},
-
-      # Static Analysis
+      {:scrivener_ecto, "~> 2.0"},
       {:credo, "~> 1.1", only: [:dev], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
-
-      # App Deps
       {:libgraph, "~> 0.13.3"},
       {:phx_gen_auth, "~> 0.5", only: [:dev], runtime: false},
       {:bcrypt_elixir, "~> 2.0"},

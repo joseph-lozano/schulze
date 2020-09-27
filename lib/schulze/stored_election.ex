@@ -11,20 +11,27 @@ defmodule Schulze.StoredElection do
     belongs_to(:user, Schulze.Accounts.User)
   end
 
-  def all(nil) do
+  def all(user_id, page \\ 1)
+
+  def all(nil, page) do
     __MODULE__
     |> Ecto.Query.order_by(asc: :id)
     |> Ecto.Query.where(is_common: true)
-    |> Repo.all()
-    |> Enum.map(& &1.content)
+    |> paginate(page)
   end
 
-  def all(user_id) do
+  def all(user_id, params) do
     __MODULE__
     |> Ecto.Query.order_by(asc: :id)
     |> Ecto.Query.where(user_id: ^user_id)
-    |> Repo.all()
-    |> Enum.map(& &1.content)
+    |> paginate(params)
+  end
+
+  def paginate(query, params) do
+    %{entries: entries, page_number: page_number, total_pages: total_pages} =
+      Repo.paginate(query, params)
+
+    {Enum.map(entries, & &1.content), %{page_number: page_number, total_pages: total_pages}}
   end
 
   def update(term) do

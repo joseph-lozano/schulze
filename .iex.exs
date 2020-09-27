@@ -102,7 +102,7 @@ setup_election = fn num ->
   election = apply_votes.(election, votes)
 end
 
-Enum.each(1..20, fn _ ->
+Enum.each(1..6, fn _ ->
   setup_election.(1)
   setup_election.(2)
   setup_election.(3)

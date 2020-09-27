@@ -284,7 +284,6 @@ defmodule Schulze.AccountsTest do
           password: "new.valid&Password"
         })
 
-      IO.puts("HERE")
       refute Repo.get_by(UserToken, user_id: user.id)
     end
   end
