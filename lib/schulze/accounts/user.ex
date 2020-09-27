@@ -1,11 +1,11 @@
 defmodule Schulze.Accounts.User do
   @moduledoc false
 
-  use Ecto.Schema
+  use TypedEctoSchema
   import Ecto.Changeset
 
   @derive {Inspect, except: [:__meta__, :password, :hashed_password]}
-  schema "users" do
+  typed_schema "users" do
     field(:email, :string)
     field(:password, :string, virtual: true)
     field(:hashed_password, :string)

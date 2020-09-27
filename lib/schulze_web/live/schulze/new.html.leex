@@ -9,8 +9,7 @@
   <%= text_input f, :name, class: "form-control" %>
   <br/>
   <%= label f, :candidates, class: "form-label" %>
-      <% error = Enum.find(f.errors, fn {field, {_error, extra}} -> field == :candidates and extra == [] end)  %>
-      <%= error_tag(f, :candidates) %>
+  <%= error_tag(f, :candidates) %>
   <%= for {candidate, i} <- Enum.with_index(@candidates, 1) do %>
       <% error = Enum.find(f.errors, fn {field, {_error, extra}} -> field == :candidates and extra == [at_index: i] end)  %>
       <% inspect error %>

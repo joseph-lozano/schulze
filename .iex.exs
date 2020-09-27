@@ -1,4 +1,6 @@
-alias Schulze.Impl
+alias Schulze
+
+Logger.configure(level: :warn)
 
 votes = %{
   # https://electowiki.org/wiki/Schulze_method#Example_1
@@ -102,21 +104,19 @@ setup_election = fn num ->
     |> Map.keys()
 
   {:ok, election} = Schulze.create_election("Sample Election ##{num}", candidates)
-  election = apply_votes.(election, votes)
+  apply_votes.(election, votes)
 end
 
 rand_vote = fn num_candidates -> :rand.uniform(num_candidates) end
 candidates = ~w(Alice Bob Charlie Doug Ellie)
 
 possible_votes =
-  for _ <- candidates,
-      _ <- candidates,
-      _ <- candidates,
-      _ <- candidates,
-      _ <- candidates do
-    votes = Enum.map(1..5, fn _ -> rand_vote.(5) end)
-
-    Enum.zip(candidates, votes)
+  for a <- 1..5,
+      b <- 1..5,
+      c <- 1..5,
+      d <- 1..5,
+      e <- 1..5 do
+    Enum.zip(candidates, [a, b, c, d, e])
     |> Enum.into(%{})
   end
 
@@ -126,18 +126,65 @@ rand_votes = fn times ->
   end
 end
 
-1..10
+1..2
 |> Enum.each(fn _ ->
-  num_votes = 100
+  Schulze.create_election("Random Election", candidates)
+end)
 
-  {:ok, rand_election} = Schulze.create_election("Random Election", candidates)
+IO.puts("DONE CREATING ELECTIONS; DEFINING BOT")
 
-  {time, _} =
-    :timer.tc(fn ->
-      apply_votes.(rand_election, rand_votes.(num_votes))
-    end)
+defmodule Bot do
+  @candidates ~w(Alice Bob Charlie Doug Ellie)
 
-  IO.puts("#{num_votes} took #{div(time, 1000)}ms")
+  @possible_votes (for a <- 1..5,
+                       b <- 1..5,
+                       c <- 1..5,
+                       d <- 1..5,
+                       e <- 1..5 do
+                     Enum.zip(@candidates, [a, b, c, d, e])
+                     |> Enum.into(%{})
+                   end)
+
+  use GenServer
+  def start_link(), do: GenServer.start_link(__MODULE__, [])
+  def init([]), do: {:ok, [], {:continue, :get_elections}}
+
+  def handle_continue(:get_elections, _state) do
+    {elections, _} = Schulze.all_elections(nil, %{page_size: 100})
+
+    Process.send_after(self(), :refresh, rand_time(5, 15))
+    Process.send_after(self(), :vote, rand_time(1, 10))
+    {:noreply, elections}
+  end
+
+  def handle_info(:vote, state) do
+    election = Enum.random(state)
+    vote = Enum.random(@possible_votes)
+    Schulze.cast_vote(election, vote)
+    Process.send_after(self(), :vote, rand_time(1, 10))
+    {:noreply, state}
+  end
+
+  def handle_info(:refresh, _state) do
+    {elections, _} = Schulze.all_elections(nil, %{page_size: 100})
+    Process.send_after(self(), :refresh, rand_time(5, 15))
+    {:noreply, elections}
+  end
+
+  defp rand_time(a, b) do
+    :crypto.rand_uniform(:timer.seconds(a), :timer.seconds(b))
+  end
+end
+
+IO.puts("Sleep")
+2 |> :timer.seconds() |> :timer.sleep()
+IO.puts("STARTING BOTS")
+
+1..325
+|> Enum.each(fn i ->
+  Bot.start_link()
+  :timer.sleep(i)
+  IO.puts("Started Bot #{i}")
 end)
 
 # {:ok, election_1} = Schulze.create_election("Example Election 1", candidates)

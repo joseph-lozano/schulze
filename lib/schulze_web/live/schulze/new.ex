@@ -21,8 +21,6 @@ defmodule SchulzeWeb.SchulzeLive.New do
 
     case Schulze.create_election(name, candidates, user_id) do
       {:error, changeset} ->
-        IO.inspect(changeset)
-
         socket
         |> assign(changest: changeset)
         |> put_flash(:error, "See Errors below")

@@ -28,4 +28,7 @@ defmodule SchulzeWeb.SchulzeView do
         "th"
     end
   end
+
+  def class(1), do: "h5"
+  def class(_), do: ""
 end

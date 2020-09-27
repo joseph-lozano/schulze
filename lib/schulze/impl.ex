@@ -54,12 +54,12 @@ defmodule Schulze.Impl do
   end
 
   defp update_with_vote(election, vote) do
-    Ecto.Query.from(e in Election, where: [id: ^election.id])
+    Ecto.Query.from(e in Election, where: [id: ^election.id], where: is_nil(e.winners))
     |> Ecto.Query.select([e], e)
     |> Repo.update_all(push: [votes: vote])
     |> case do
       {1, [election]} -> {:ok, election}
-      _ -> raise "This shouldn't happen since ids are unique"
+      {0, _} -> {:error, "Cant vote in resulted elections"}
     end
   end
 
@@ -76,7 +76,7 @@ defmodule Schulze.Impl do
     Multi.new()
     |> Multi.run(:get, fn _, _ ->
       election =
-        Ecto.Query.from(e in Election, where: e.id == ^id, lock: "FOR UPDATE")
+        Ecto.Query.from(e in Election, where: e.id == ^id, lock: "FOR UPDATE NOWAIT")
         |> Repo.one()
 
       {:ok, election}
