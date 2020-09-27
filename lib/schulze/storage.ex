@@ -7,13 +7,14 @@ defmodule Schulze.StoredElection do
   schema "elections" do
     field(:content, Schulze.Term)
     field(:winners, {:array, {:array, :string}})
+    field(:is_common, :boolean)
     belongs_to(:user, Schulze.Accounts.User)
   end
 
   def all(nil) do
     __MODULE__
     |> Ecto.Query.order_by(asc: :id)
-    |> Ecto.Query.where([s], is_nil(s.user_id))
+    |> Ecto.Query.where(is_common: true)
     |> Repo.all()
     |> Enum.map(& &1.content)
   end
@@ -36,10 +37,12 @@ defmodule Schulze.StoredElection do
   end
 
   def create(term, user_id) do
+    common? = is_nil(user_id)
+
     Ecto.Multi.new()
     |> Ecto.Multi.insert(
       :first_insert,
-      changeset(%__MODULE__{}, %{content: term, user_id: user_id})
+      changeset(%__MODULE__{}, %{content: term, user_id: user_id, is_common: common?})
     )
     |> Ecto.Multi.run(:get_id, fn _repo,
                                   %{first_insert: %{id: id, content: content} = stored_election} ->
@@ -67,6 +70,6 @@ defmodule Schulze.StoredElection do
   end
 
   def changeset(term, attrs) do
-    Ecto.Changeset.cast(term, attrs, [:content, :winners, :user_id])
+    Ecto.Changeset.cast(term, attrs, [:content, :winners, :user_id, :is_common])
   end
 end
