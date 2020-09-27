@@ -13,11 +13,18 @@ defmodule Schulze.ReleaseTasks do
     :ecto_sql
   ]
 
-  def migrate do
+  def reset() do
     start_services()
+    run_migrations(:down)
+    run_migrations(:up)
+    IO.puts("Success!")
+  end
 
-    run_migrations()
+  def migrate(dir \\ :up)
 
+  def migrate(dir) do
+    start_services()
+    run_migrations(dir)
     IO.puts("Success!")
   end
 
@@ -36,15 +43,15 @@ defmodule Schulze.ReleaseTasks do
     Enum.each(repos(), & &1.start_link(pool_size: 2))
   end
 
-  defp run_migrations do
-    Enum.each(repos(), &run_migrations_for/1)
+  defp run_migrations(dir) do
+    Enum.each(repos(), &run_migrations_for(&1, dir))
   end
 
-  defp run_migrations_for(repo) do
+  defp run_migrations_for(repo, dir) do
     app = Keyword.get(repo.config(), :otp_app)
     migrations_path = priv_path_for(repo, "migrations")
     IO.puts("Running migrations for #{app}, #{inspect(repo)}, path: #{inspect(migrations_path)}")
-    Ecto.Migrator.run(repo, [migrations_path], :up, all: true)
+    Ecto.Migrator.run(repo, [migrations_path], dir, all: true)
   end
 
   defp priv_path_for(repo, filename) do
