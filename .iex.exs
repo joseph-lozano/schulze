@@ -180,7 +180,7 @@ IO.puts("Sleep")
 2 |> :timer.seconds() |> :timer.sleep()
 IO.puts("STARTING BOTS")
 
-1..325
+1..32
 |> Enum.each(fn i ->
   Bot.start_link()
   :timer.sleep(i)

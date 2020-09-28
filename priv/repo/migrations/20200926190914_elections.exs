@@ -7,6 +7,7 @@ defmodule Schulze.Repo.Migrations.Election do
       add(:winners, :jsonb)
       add(:votes, {:array, :map}, null: false)
       add(:candidates, {:array, :string})
+      add(:passwords, {:array, :string})
       add(:user_id, references(:users, on_delete: :delete_all))
       add(:is_common, :boolean)
     end

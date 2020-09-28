@@ -11,11 +11,19 @@ defmodule SchulzeWeb.SchulzeLive.New do
     changeset = Election.new(%Election{}, %{user_id: user_id})
     candidates = add_extra([])
 
-    {:ok, assign(socket, changeset: changeset, user_id: user_id, candidates: candidates)}
+    {:ok,
+     assign(socket,
+       changeset: changeset,
+       private: false,
+       user_id: user_id,
+       candidates: candidates,
+       end_time: false
+     )}
   end
 
   def handle_event("submit", %{"election" => params}, socket) do
     %{"name" => name} = params
+    IO.inspect(params, label: "PRAMS")
     user_id = socket.assigns.user_id
     candidates = get_candidates(params)
 
@@ -36,13 +44,28 @@ defmodule SchulzeWeb.SchulzeLive.New do
 
   def handle_event("validate", %{"election" => params}, socket) do
     %{"name" => name} = params
+    private? = params["private?"] == "true"
+    end_time? = params["end_time?"] == "true"
     user_id = socket.assigns.user_id
 
     candidates = get_candidates(params)
 
-    cs = Election.new(%Election{}, %{name: name, candidates: candidates, user_id: user_id})
+    cs =
+      Election.new(%Election{}, %{
+        name: name,
+        candidates: candidates,
+        user_id: user_id,
+        voters: params["voters"]
+      })
 
-    {:noreply, assign(socket, candidates: add_extra(candidates), name: name, changeset: cs)}
+    {:noreply,
+     assign(socket,
+       candidates: add_extra(candidates),
+       name: name,
+       end_time: end_time?,
+       private: private?,
+       changeset: cs
+     )}
   end
 
   defp add_extra(candidates) do

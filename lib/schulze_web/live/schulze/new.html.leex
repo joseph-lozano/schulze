@@ -18,6 +18,25 @@
         <%= text_input f, :"candidate_#{i}", value: candidate, class: "form-control mb-3"  %>
       <% end %>
   <% end %>
+
+    <%= label f, :voters, "Number of Voters",class: "form-label" %>
+    <span>| Enter '0' for open voting</span>
+    <%= number_input f, :voters, class: "form-control", min: 0, max: 10_000 %>
+
+    <div class="row">
+      <%= label f, :voters, "End Date and Time",class: "form-label mt-3" %>
+      <% now = %Time{Time.truncate(Time.utc_now(), :second) | second: 0} %>
+
+      <div class="col">
+        <span class="text-muted">Current Server Date is: <%= Date.utc_today() %></span>
+        <%= date_input f, :end_date, class: "form-control", min: Date.utc_today(), max: Date.add(Date.utc_today(), 365) %>
+      </div>
+      <div class="col">
+        <span class="text-muted">Current Server Time is: <%= now %></span>
+        <%= time_input f, :end_time, class: "form-control" %>
+      </div>
+    </div>
+
   <%= submit "Submit", class: "btn btn-primary mt-3" %>
 
   </form>

@@ -18,6 +18,7 @@ defmodule Schulze.Election do
     field(:votes, {:array, :map}, default: [], null: false)
     field(:winners, {:array, {:array, :string}})
     field(:is_common, :boolean)
+    field(:passwords, {:array, :string})
     belongs_to(:user, User)
   end
 
