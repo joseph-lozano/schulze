@@ -56,28 +56,26 @@ defmodule Schulze.Impl do
   defp update_with_vote(election, vote) do
     Multi.new()
     |> Multi.run(:passwords, fn _, _ ->
-      Ecto.Query.from(e in Election,
-        select: [e.passwords],
-        where: [id: ^election.id],
-        where: is_nil(e.winners),
-        lock: "FOR UPDATE NOWAIT"
-      )
-      |> Repo.one()
-      |> case do
-        [passwords] -> {:ok, passwords}
-        _ -> {:error, "Can't find election"}
+      with query <-
+             Ecto.Query.from(e in Election,
+               select: [e.passwords],
+               where: [id: ^election.id],
+               lock: "FOR UPDATE NOWAIT"
+             ),
+           [passwords] <- Repo.all(query),
+           true <- vote["password"] in passwords do
+        {:ok, :ok}
+      else
+        [] -> {:error, "Can't find election"}
+        false -> {:error, "Invalid password"}
       end
     end)
-    |> Multi.run(:pull, fn _, %{passwords: passwords} ->
-      if vote["password"] in passwords or (passwords == [] and not election.private) do
-        Ecto.Query.from(e in Election, where: [id: ^election.id], where: is_nil(e.winners))
-        |> Repo.update_all(pull: [passwords: vote["password"]])
-        |> case do
-          {1, x} -> {:ok, x}
-          _ -> {:error, "Could not pull password"}
-        end
-      else
-        {:error, "Invalid Password"}
+    |> Multi.run(:pull, fn _, %{passwords: _} ->
+      Ecto.Query.from(e in Election, where: [id: ^election.id], where: is_nil(e.winners))
+      |> Repo.update_all(pull: [passwords: vote["password"]])
+      |> case do
+        {1, x} -> {:ok, x}
+        _ -> {:error, "Could not pull password"}
       end
     end)
     |> Multi.run(:push, fn _, _ ->
@@ -128,7 +126,7 @@ defmodule Schulze.Impl do
     |> Repo.transaction()
     |> case do
       {:ok, %{update: election}} ->
-        Schulze.broadcast("election_updates", "winner", %{id: election.id})
+        Schulze.broadcast("election_updates", "election_updated", %{id: election.id})
         {:ok, election}
 
       error ->

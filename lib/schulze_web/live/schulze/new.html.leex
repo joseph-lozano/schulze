@@ -1,19 +1,17 @@
 <div class="container">
-  <%= if @passwords == [] do %>
+  <%= if @created == false do %>
   <%= render SchulzeWeb.SchulzeView, "_new_election.html", changeset: @changeset, candidates: @candidates %>
   <% else %>
-    <h4>Passwords</h4>
-    <p>You will not be shown these passwords again.</p>
-    <% pws = Enum.join(@passwords, "\n") %>
-    <button id="copy">Copy</button>
-    <textarea phx-hook="Copyable" class="form-control" id="copyable" disabled="true" style="resize:none;overflow-y:hidden;" rows="<%= length(@passwords) %>">
-      <%= pws %>
-    </textarea>
-    <!--
-    <%= for pw <- @passwords do  %>
-      <%= pw %>
-      <br/>
+    <% link = Routes.live_url(@socket, SchulzeWeb.SchulzeLive.Show, @id) %>
+    <p>The link to the ballot is <%= link link, to: link %></p>
+    <%= unless @passwords == [] do %>
+      <p>You will not be shown these passwords again</p>
+      <h4>Passwords</h4>
+      <% pws = Enum.join(@passwords, "\n") %>
+      <button id="copy">Copy</button>
+      <textarea phx-hook="Copyable" class="form-control" id="copyable" disabled="true" style="resize:none;overflow-y:hidden;" rows="<%= length(@passwords) %>">
+        <%= pws %>
+      </textarea>
     <% end %>
-    -->
   <% end %>
 </div>

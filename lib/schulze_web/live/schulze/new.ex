@@ -19,7 +19,8 @@ defmodule SchulzeWeb.SchulzeLive.New do
        candidates: candidates,
        voters: 0,
        end_time: false,
-       passwords: []
+       passwords: [],
+       created: false
      )}
   end
 
@@ -41,16 +42,10 @@ defmodule SchulzeWeb.SchulzeLive.New do
         |> put_flash(:error, "See Errors below")
         |> noreply()
 
-      {:ok, %Schulze.Election{passwords: []}} ->
+      {:ok, %Schulze.Election{id: id, passwords: passwords}} ->
         socket
-        |> put_flash(:info, "Created Election")
-        |> push_redirect(to: Routes.live_path(socket, SchulzeWeb.SchulzeLive.Index))
-        |> noreply()
-
-      {:ok, %Schulze.Election{passwords: passwords}} ->
-        socket
-        |> put_flash(:info, "Created Election")
-        |> assign(passwords: passwords)
+        |> put_flash(:info, "Election Created")
+        |> assign(passwords: passwords, id: id, created: true)
         |> noreply()
     end
   end
