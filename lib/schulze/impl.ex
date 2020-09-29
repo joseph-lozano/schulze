@@ -175,15 +175,18 @@ defmodule Schulze.Impl do
         {pair, get_strongest_path_weight(g, c1, c2)}
       end)
       |> get_pairwise_winners()
-      |> Enum.map(fn {{c1, _}, _} -> c1 end)
-      |> Enum.frequencies()
-      |> Enum.group_by(fn {_, strength} -> strength end, fn {candidate, _} -> candidate end)
-      |> Enum.sort_by(fn {score, _} -> score end, &(&1 >= &2))
-      |> Enum.map(&elem(&1, 1))
+      |> Enum.frequencies_by(fn {{c1, _}, _} -> c1 end)
+      |> transpose_map()
+      |> Enum.sort_by(fn {key, _} -> key end, &(&1 >= &2))
+      |> Enum.map(fn {_, value} -> value end)
 
     missing_candidates = candidates -- List.flatten(results)
 
     results ++ [missing_candidates]
+  end
+
+  def transpose_map(map) do
+    Enum.group_by(map, fn {_, value} -> value end, fn {key, _} -> key end)
   end
 
   defp sorted_pair({{c1, c2}, _}) do
