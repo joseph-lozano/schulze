@@ -58,12 +58,12 @@ defmodule Schulze.Impl do
     |> Multi.run(:passwords, fn _, _ ->
       with query <-
              Ecto.Query.from(e in Election,
-               select: [e.passwords],
+               select: e,
                where: [id: ^election.id],
                lock: "FOR UPDATE NOWAIT"
              ),
-           [passwords] <- Repo.all(query),
-           true <- vote["password"] in passwords do
+           [election] <- Repo.all(query),
+           true <- not election.private or vote["password"] in election.passwords do
         {:ok, :ok}
       else
         [] -> {:error, "Can't find election"}
@@ -81,17 +81,18 @@ defmodule Schulze.Impl do
     |> Multi.run(:push, fn _, _ ->
       Ecto.Query.from(e in Election,
         where: [id: ^election.id],
-        where: is_nil(e.winners)
+        where: is_nil(e.winners),
+        select: e
       )
       |> Repo.update_all(push: [votes: Map.delete(vote, "password")])
       |> case do
-        {1, x} -> {:ok, x}
+        {1, [election]} -> {:ok, election}
         {0, _} -> {:error, "Cant vote in resulted elections"}
       end
     end)
     |> Repo.transaction()
     |> case do
-      {:ok, _} -> {:ok, election}
+      {:ok, %{push: election}} -> {:ok, election}
       x -> x
     end
   end
@@ -169,13 +170,10 @@ defmodule Schulze.Impl do
     pairwise_winners = get_pairwise_winners(pairwise)
     g = build_graph(candidates, pairwise_winners)
 
-    strongest_paths =
+    results =
       Enum.map(pairs, fn {c1, c2} = pair ->
         {pair, get_strongest_path_weight(g, c1, c2)}
       end)
-
-    results =
-      strongest_paths
       |> get_pairwise_winners()
       |> Enum.map(fn {{c1, _}, _} -> c1 end)
       |> Enum.frequencies()
