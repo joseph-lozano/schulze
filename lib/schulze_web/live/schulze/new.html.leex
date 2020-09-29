@@ -1,43 +1,19 @@
 <div class="container">
-  <h1>New Schulze Election</h1>
-
-  <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :submit] %>
-  <%= label f, :name, class: "form-label" do %>
-      Name
-      <%= error_tag f, :name %>
+  <%= if @passwords == [] do %>
+  <%= render SchulzeWeb.SchulzeView, "_new_election.html", changeset: @changeset, candidates: @candidates %>
+  <% else %>
+    <h4>Passwords</h4>
+    <p>You will not be shown these passwords again.</p>
+    <% pws = Enum.join(@passwords, "\n") %>
+    <button id="copy">Copy</button>
+    <textarea phx-hook="Copyable" class="form-control" id="copyable" disabled="true" style="resize:none;overflow-y:hidden;" rows="<%= length(@passwords) %>">
+      <%= pws %>
+    </textarea>
+    <!--
+    <%= for pw <- @passwords do  %>
+      <%= pw %>
+      <br/>
+    <% end %>
+    -->
   <% end %>
-  <%= text_input f, :name, class: "form-control" %>
-  <br/>
-  <%= label f, :candidates, class: "form-label" %>
-  <%= error_tag(f, :candidates) %>
-  <%= for {candidate, i} <- Enum.with_index(@candidates, 1) do %>
-      <% error = Enum.find(f.errors, fn {field, {_error, extra}} -> field == :candidates and extra == [at_index: i] end)  %>
-      <% inspect error %>
-      <!-- `if` is important so we don't create atoms willy-nilly -->
-      <%= if i <= 100 do %>
-        <%= text_input f, :"candidate_#{i}", value: candidate, class: "form-control mb-3"  %>
-      <% end %>
-  <% end %>
-
-    <%= label f, :voters, "Number of Voters",class: "form-label" %>
-    <span>| Enter '0' for open voting</span>
-    <%= number_input f, :voters, class: "form-control", min: 0, max: 10_000 %>
-
-    <div class="row">
-      <%= label f, :voters, "End Date and Time",class: "form-label mt-3" %>
-      <% now = %Time{Time.truncate(Time.utc_now(), :second) | second: 0} %>
-
-      <div class="col">
-        <span class="text-muted">Current Server Date is: <%= Date.utc_today() %></span>
-        <%= date_input f, :end_date, class: "form-control", min: Date.utc_today(), max: Date.add(Date.utc_today(), 365) %>
-      </div>
-      <div class="col">
-        <span class="text-muted">Current Server Time is: <%= now %></span>
-        <%= time_input f, :end_time, class: "form-control" %>
-      </div>
-    </div>
-
-  <%= submit "Submit", class: "btn btn-primary mt-3" %>
-
-  </form>
 </div>

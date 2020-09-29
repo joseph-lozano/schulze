@@ -180,12 +180,12 @@ IO.puts("Sleep")
 2 |> :timer.seconds() |> :timer.sleep()
 IO.puts("STARTING BOTS")
 
-1..32
-|> Enum.each(fn i ->
-  Bot.start_link()
-  :timer.sleep(i)
-  IO.puts("Started Bot #{i}")
-end)
+# 1..32
+# |> Enum.each(fn i ->
+#   Bot.start_link()
+#   :timer.sleep(i)
+#   IO.puts("Started Bot #{i}")
+# end)
 
 # {:ok, election_1} = Schulze.create_election("Example Election 1", candidates)
 # {:ok, winner_1} =

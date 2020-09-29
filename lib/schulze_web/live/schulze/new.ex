@@ -17,27 +17,40 @@ defmodule SchulzeWeb.SchulzeLive.New do
        private: false,
        user_id: user_id,
        candidates: candidates,
-       end_time: false
+       voters: 0,
+       end_time: false,
+       passwords: []
      )}
   end
 
   def handle_event("submit", %{"election" => params}, socket) do
     %{"name" => name} = params
-    IO.inspect(params, label: "PRAMS")
     user_id = socket.assigns.user_id
     candidates = get_candidates(params)
 
-    case Schulze.create_election(name, candidates, user_id) do
+    voters =
+      case params["voters"] do
+        "" -> 0
+        x -> String.to_integer(x)
+      end
+
+    case Schulze.create_election(name, candidates, user_id, voters) do
       {:error, changeset} ->
         socket
         |> assign(changest: changeset)
         |> put_flash(:error, "See Errors below")
         |> noreply()
 
-      {:ok, _} ->
+      {:ok, %Schulze.Election{passwords: []}} ->
         socket
         |> put_flash(:info, "Created Election")
         |> push_redirect(to: Routes.live_path(socket, SchulzeWeb.SchulzeLive.Index))
+        |> noreply()
+
+      {:ok, %Schulze.Election{passwords: passwords}} ->
+        socket
+        |> put_flash(:info, "Created Election")
+        |> assign(passwords: passwords)
         |> noreply()
     end
   end
@@ -50,12 +63,18 @@ defmodule SchulzeWeb.SchulzeLive.New do
 
     candidates = get_candidates(params)
 
+    voters =
+      case params["voters"] do
+        "" -> 0
+        x -> String.to_integer(x)
+      end
+
     cs =
       Election.new(%Election{}, %{
         name: name,
         candidates: candidates,
         user_id: user_id,
-        voters: params["voters"]
+        voters: voters
       })
 
     {:noreply,
@@ -64,7 +83,8 @@ defmodule SchulzeWeb.SchulzeLive.New do
        name: name,
        end_time: end_time?,
        private: private?,
-       changeset: cs
+       changeset: cs,
+       voters: socket.assigns.voters
      )}
   end
 

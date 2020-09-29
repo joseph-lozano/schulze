@@ -3,6 +3,6 @@
 <%= if @election.winners do %>
   <%= render SchulzeWeb.SchulzeView, "_results.html", winners: @election.winners, votes: length(@election.votes) %>
 <% else %>
-  <%= render SchulzeWeb.SchulzeView, "_ballot.html", candidates: @candidates, votes: length(@election.votes) %>
+  <%= render SchulzeWeb.SchulzeView, "_ballot.html", candidates: @candidates, votes: length(@election.votes), private?: @election.private %>
 <% end %>
 <div>

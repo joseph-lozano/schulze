@@ -29,9 +29,9 @@ defmodule SchulzeWeb.SchulzeLive.Show do
         |> put_flash(:info, "Vote Cast")
         |> no_reply()
 
-      {:error, _reason} ->
+      {:error, _, reason, _} ->
         socket
-        |> put_flash(:error, "Error Casting Vote")
+        |> put_flash(:error, reason)
         |> no_reply()
     end
   end

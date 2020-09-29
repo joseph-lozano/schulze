@@ -37,7 +37,7 @@ defmodule Schulze.Impl do
   # end
 
   @spec cast_vote(Election.t(), Election.vote()) ::
-          {:ok, Election.t()} | {:error, reason :: term()}
+          {:ok, Election.t()} | {:error, any(), reason :: String.t(), any()}
   def cast_vote(election, vote) do
     # any candidates not in the vote will have their scores set to zero
     vote =
@@ -54,17 +54,57 @@ defmodule Schulze.Impl do
   end
 
   defp update_with_vote(election, vote) do
-    Ecto.Query.from(e in Election, where: [id: ^election.id], where: is_nil(e.winners))
-    |> Ecto.Query.select([e], e)
-    |> Repo.update_all(push: [votes: vote])
+    Multi.new()
+    |> Multi.run(:passwords, fn _, _ ->
+      Ecto.Query.from(e in Election,
+        select: [e.passwords],
+        where: [id: ^election.id],
+        where: is_nil(e.winners),
+        lock: "FOR UPDATE NOWAIT"
+      )
+      |> Repo.one()
+      |> case do
+        [passwords] -> {:ok, passwords}
+        _ -> {:error, "Can't find election"}
+      end
+    end)
+    |> Multi.run(:pull, fn _, %{passwords: passwords} ->
+      if vote["password"] in passwords or (passwords == [] and not election.private) do
+        Ecto.Query.from(e in Election, where: [id: ^election.id], where: is_nil(e.winners))
+        |> Repo.update_all(pull: [passwords: vote["password"]])
+        |> case do
+          {1, x} -> {:ok, x}
+          _ -> {:error, "Could not pull password"}
+        end
+      else
+        {:error, "Invalid Password"}
+      end
+    end)
+    |> Multi.run(:push, fn _, _ ->
+      Ecto.Query.from(e in Election,
+        where: [id: ^election.id],
+        where: is_nil(e.winners)
+      )
+      |> Repo.update_all(push: [votes: Map.delete(vote, "password")])
+      |> case do
+        {1, x} -> {:ok, x}
+        {0, _} -> {:error, "Cant vote in resulted elections"}
+      end
+    end)
+    |> Repo.transaction()
     |> case do
-      {1, [election]} -> {:ok, election}
-      {0, _} -> {:error, "Cant vote in resulted elections"}
+      {:ok, _} -> {:ok, election}
+      x -> x
     end
   end
 
-  def create_election(name, candidates, user_id) do
-    Election.new(%Election{}, %{name: name, candidates: candidates, user_id: user_id})
+  def create_election(name, candidates, user_id, voters) do
+    Election.new(%Election{}, %{
+      name: name,
+      candidates: candidates,
+      user_id: user_id,
+      voters: voters
+    })
     |> Repo.insert()
   end
 
@@ -87,8 +127,12 @@ defmodule Schulze.Impl do
     end)
     |> Repo.transaction()
     |> case do
-      {:ok, %{update: election}} -> {:ok, election}
-      error -> error
+      {:ok, %{update: election}} ->
+        Schulze.broadcast("election_updates", "winner", %{id: election.id})
+        {:ok, election}
+
+      error ->
+        error
     end
   end
 
@@ -214,7 +258,9 @@ defmodule Schulze.Impl do
   end
 
   defp validate(election, vote) do
-    Enum.reduce_while(vote, :ok, fn {candidate, preference}, acc ->
+    vote
+    |> Map.delete("password")
+    |> Enum.reduce_while(:ok, fn {candidate, preference}, acc ->
       cond do
         preference < 0 -> {:halt, {:error, "Preferences cannot be negative"}}
         candidate not in election.candidates -> {:halt, {:error, "Candidate not on election"}}

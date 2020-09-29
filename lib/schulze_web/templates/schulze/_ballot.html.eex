@@ -15,5 +15,14 @@
         </div>
       <% end %>
     </div>
+      <%= if @private? do %>
+    <div class="row">
+      <div class="col-3">
+          <label class="form-label">password
+          </label>
+        <%= text_input f, :password, class: "form-control" %>
+        </div>
+      </div>
+    <% end %>
     <%= submit "Vote", class: "btn btn-primary mt-3" %>
   </form>
