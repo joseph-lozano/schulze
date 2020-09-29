@@ -23,6 +23,7 @@
     <%= number_input f, :voters, class: "form-control", min: 0, max: 20_000 %>
     <%= error_tag(f, :voters) %>
 
+    <!--
     <div class="row">
       <%= label f, :end_datetime, "End Date and Time",class: "form-label mt-3" %>
       <% now = %Time{Time.truncate(Time.utc_now(), :second) | second: 0} %>
@@ -36,6 +37,7 @@
         <%= time_input f, :end_time, class: "form-control" %>
       </div>
     </div>
+    -->
 
   <%= submit "Submit", class: "btn btn-primary mt-3" %>
   </form>
