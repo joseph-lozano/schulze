@@ -14,7 +14,8 @@ defmodule SchulzeWeb.SchulzeLive.Show do
         |> ok()
 
       election ->
-        candidates = Enum.shuffle(election.candidates)
+        candidates = if connected?(socket), do: Enum.shuffle(election.candidates), else: []
+
         {:ok, assign(socket, id: id, election: election, candidates: candidates)}
     end
   end
