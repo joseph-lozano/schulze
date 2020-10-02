@@ -181,7 +181,8 @@ defmodule Schulze.Impl do
 
     missing_candidates = candidates -- List.flatten(results)
 
-    results ++ [missing_candidates]
+    (results ++ [missing_candidates])
+    |> IO.inspect()
   end
 
   def transpose_map(map) do
@@ -218,14 +219,20 @@ defmodule Schulze.Impl do
     |> Enum.reject(&is_nil(&1))
   end
 
-  defp build_graph(candidates, pairwise_winners) do
+  defp build_graph(candidates, pairwise) do
     g =
       Graph.new()
       |> Graph.add_vertices([candidates])
 
-    Enum.reduce(pairwise_winners, g, fn {{c1, c2}, weight}, graph ->
+    Enum.reduce(pairwise, g, fn {{c1, c2}, weight}, graph ->
       Graph.add_edge(graph, c1, c2, weight: weight)
     end)
+  end
+
+  defp get_strongest_path_weight(graph, node1, node2) do
+    Graph.get_paths(graph, node1, node2)
+    |> Enum.map(&get_path_strength(graph, &1))
+    |> max_or_else(0)
   end
 
   defp get_path_strength(graph, path) do
@@ -239,12 +246,6 @@ defmodule Schulze.Impl do
   defp get_path_strength(graph, [node | tail], acc) do
     [edge] = Graph.edges(graph, node, hd(tail))
     get_path_strength(graph, tail, [edge.weight | acc])
-  end
-
-  defp get_strongest_path_weight(graph, node1, node2) do
-    Graph.get_paths(graph, node1, node2)
-    |> Enum.map(&get_path_strength(graph, &1))
-    |> max_or_else(0)
   end
 
   defp max_or_else([], x), do: x
