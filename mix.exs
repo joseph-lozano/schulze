@@ -5,7 +5,7 @@ defmodule Schulze.MixProject do
     [
       app: :schulze,
       version: "0.1.0",
-      elixir: "~> 1.10",
+      elixir: "~> 1.11",
       elixirc_paths: elixirc_paths(Mix.env()),
       elixirc_options: elixirc_options(Mix.env()),
       compilers: [:phoenix] ++ Mix.compilers(),
